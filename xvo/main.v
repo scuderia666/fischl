@@ -7,43 +7,45 @@ const (
 	version = '0.1'
 )
 
-struct Packages {
+struct Program {
 	packages map[string]int
 }
 
-fn usage() {
-	println("xvo build|install <pkg>")
-	exit(1)
-}
-
-fn do_build() {
+fn (p Program) start() {
 
 }
 
-fn do_install() {
+fn (p Program) read_package(name string) {
+	pkg := Package{name}
+}
+
+fn (p Program) do_build() {
 
 }
 
-fn do_action(action string, pkg string) {
+fn (p Program) do_install() {
+
+}
+
+fn (p Program) do_action(action string, pkg string) {
 	println('$action: $pkg')
 
 	match action {
 		'build' {
-			do_build()
+			p.do_build()
 		}
 
 		'install' {
-			do_install()
+			p.do_install()
 		}
 
 		else { }
 	}
 }
 
-fn read_package(name string) {
-	pkg := Package{name}
-
-	packages[name] = pkg
+fn usage() {
+	println("xvo build|install <pkg>")
+	exit(1)
 }
 
 fn main() {
@@ -52,6 +54,10 @@ fn main() {
 	args.alias('W', 'with')
 
 	args.parse()
+
+	p := Program{}
+
+	p.start()
 
 	if args.command.len == 0 {
 		exit(1)
@@ -73,8 +79,8 @@ fn main() {
 
 	if args.unknown.len > 0 {
 		for _, pkg in args.unknown {
-			read_package(pkg)
-			do_action(action, pkg)
+			p.read_package(pkg)
+			p.do_action(action, pkg)
 		}
 	}
 
