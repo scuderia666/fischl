@@ -8,22 +8,29 @@ const (
 )
 
 struct Program {
-	packages map[string]int
+mut:
+	packages map[string]Package
 }
 
 fn (p Program) start() {
 
 }
 
-fn (p Program) read_package(name string) {
-	pkg := Package{name}
+fn (mut p Program) read_package(name string) {
+	mut pkg := Package{name: name}
+
+	pkg.test = "asd"
+
+	p.packages[name] = pkg
 }
 
-fn (p Program) do_build() {
+fn (p Program) do_build(pkgname string) {
+	pkg := p.packages[pkgname]
 
+	println(pkg.test)
 }
 
-fn (p Program) do_install() {
+fn (p Program) do_install(pkg string) {
 
 }
 
@@ -32,11 +39,11 @@ fn (p Program) do_action(action string, pkg string) {
 
 	match action {
 		'build' {
-			p.do_build()
+			p.do_build(pkg)
 		}
 
 		'install' {
-			p.do_install()
+			p.do_install(pkg)
 		}
 
 		else { }
@@ -55,7 +62,7 @@ fn main() {
 
 	args.parse()
 
-	p := Program{}
+	mut p := Program{}
 
 	p.start()
 

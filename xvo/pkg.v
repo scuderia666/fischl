@@ -1,5 +1,7 @@
 module pkg
 
 pub struct Package {
-	name string
+pub mut:
+	name string [required]
+	test string
 }
