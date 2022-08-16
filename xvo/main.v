@@ -19,15 +19,13 @@ fn (p Program) start() {
 fn (mut p Program) read_package(name string) {
 	mut pkg := Package{name: name}
 
-	pkg.test = "asd"
-
 	p.packages[name] = pkg
 }
 
 fn (p Program) do_build(pkgname string) {
-	pkg := p.packages[pkgname]
+	mut pkg := p.packages[pkgname]
 
-	println(pkg.test)
+	pkg.build()
 }
 
 fn (p Program) do_install(pkg string) {
