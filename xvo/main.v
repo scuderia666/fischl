@@ -83,14 +83,14 @@ fn main() {
 	}
 
 	if args.unknown.len > 0 {
-		for _, pkg in args.unknown {
+		for pkg in args.unknown {
 			p.read_package(pkg)
 			p.do_action(action, pkg)
 		}
 	}
 
 	if args.options.len > 0 {
-		for _, a in args.options['with'].split(',') {
+		for a in args.options['with'].split(',') {
 			println(a)
 		}
 
