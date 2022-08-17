@@ -7,6 +7,7 @@ import util
 pub struct Package {
 pub mut:
 	name string [required]
+	cfg map[string]string [required]
 	data map[string][]string
 	vars map[string]string
 }
@@ -21,22 +22,18 @@ pub fn (mut p Package) read(pkgfile string) {
 
 	for sect in sects {
 		for line in io.read_sect(lines, sect) {
-			p.data[sect] << line
+			p.data[sect] << util.apply_placeholders(line, p.vars)
 		}
-	}
-
-	for sect, data in p.data {
-		for line in data {
-			linee := util.apply_placeholders(line, p.vars)
-			println('$sect: $linee')
-		}
-	}
-
-	for var, val in p.vars {
-		println('$var: $val')
 	}
 }
 
+pub fn (mut p Package) download() {
+	/*for src in p.data['src'] {
+		println(src)
+	}*/
+}
+
 pub fn (mut p Package) build() {
-	p.read('test')
+	p.read(p.cfg['pkgdir'] + '/$p.name')
+	p.download()
 }

@@ -2,6 +2,7 @@ import os
 import vargs
 //import lol
 import pkg { Package }
+import util
 
 const (
 	version = '0.1'
@@ -10,14 +11,30 @@ const (
 struct Program {
 mut:
 	packages map[string]Package
+	cfg map[string]string
+	rootdir string
+	srcdir string
+	pkgdir string
 }
 
-fn (p Program) start() {
+fn (mut p Program) start() {
+	cwd := os.getwd()
 
+	mut placeholders := map[string]string
+
+	placeholders['pwd'] = cwd
+
+	vars := ['rootdir', 'srcdir', 'pkgdir']
+
+	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
+
+	p.rootdir = p.cfg['rootdir']
+	p.srcdir = p.cfg['srcdir']
+	p.pkgdir = p.cfg['pkgdir']
 }
 
 fn (mut p Program) read_package(name string) {
-	mut pkg := Package{name: name}
+	mut pkg := Package{name: name, cfg: p.cfg}
 
 	p.packages[name] = pkg
 }
