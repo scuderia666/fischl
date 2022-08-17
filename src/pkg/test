@@ -1,8 +1,0 @@
-ver 0.1
-
-[src]
-src1
-src2
-
-[build]
-cd name-%ver

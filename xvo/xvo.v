@@ -8,13 +8,7 @@ pub struct Program {
 pub mut:
 	packages map[string]Package
 	cfg map[string]string
-
-	rootdir string
-	srcdir string
-	pkgdir string
-	stuff string
-	dldir string
-	bldir string
+	cfgdata util.Data
 }
 
 pub fn (mut p Program) start() {
@@ -28,16 +22,20 @@ pub fn (mut p Program) start() {
 
 	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
 
-	p.rootdir = p.cfg['root']
-	p.srcdir = p.cfg['src']
-	p.pkgdir = p.srcdir + '/pkg'
-	p.pkgdir = p.srcdir + '/stuff'
-	p.dldir = p.cfg['work'] + '/dl'
-	p.bldir = p.cfg['work'] + '/build'
+	p.cfgdata.rootdir = p.cfg['root']
+	p.cfgdata.srcdir = p.cfg['src']
+	p.cfgdata.pkgdir = p.cfgdata.srcdir + '/pkg'
+	p.cfgdata.stuff = p.cfgdata.srcdir + '/stuff'
+	p.cfgdata.dldir = p.cfg['work'] + '/dl'
+	p.cfgdata.bldir = p.cfg['work'] + '/build'
+
+	os.mkdir(p.cfg['work']) or { }
+	os.mkdir(p.cfgdata.dldir) or { }
+	os.mkdir(p.cfgdata.bldir) or { }
 }
 
 pub fn (mut p Program) read_package(name string) {
-	mut pkg := Package{name: name}
+	mut pkg := Package{name: name, cfgdata: p.cfgdata}
 
 	p.packages[name] = pkg
 }

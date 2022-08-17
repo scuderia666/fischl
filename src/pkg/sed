@@ -1,0 +1,7 @@
+ver 4.8
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
+
+[build]
+cd %name-%ver
