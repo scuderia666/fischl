@@ -1,7 +1,7 @@
 import os
 import vargs
 //import lol
-import xvo { Program }
+import xvo { Xvo }
 
 const (
 	version = '0.1'
@@ -17,8 +17,8 @@ fn main() {
 	args.alias('W', 'with')
 	args.parse()
 
-	mut p := Program{}
-	p.start()
+	mut x := Xvo{}
+	x.start()
 
 	if args.command.len == 0 {
 		exit(1)
@@ -40,8 +40,8 @@ fn main() {
 
 	if args.unknown.len > 0 {
 		for pkg in args.unknown {
-			p.read_package(pkg)
-			p.do_action(action, pkg)
+			x.prog.read_package(pkg)
+			x.prog.do_action(action, pkg)
 		}
 	}
 
