@@ -10,8 +10,13 @@ pub mut:
 	data map[string][]string
 	vars map[string]string
 
+	util util.Util
+
 	dl string
 	bl string
+
+	sources map[string]string
+	archives map[string]string
 }
 
 pub fn (mut p Package) read(pkgfile string) {
@@ -31,14 +36,32 @@ pub fn (mut p Package) read(pkgfile string) {
 
 	p.dl = p.cfgdata.dldir + '/$p.name'
 	p.bl = p.cfgdata.bldir + '/$p.name'
+
+	p.util.init()
 }
 
 pub fn (mut p Package) download() {
 	os.mkdir(p.dl) or { }
 
 	for src in p.data['src'] {
-		if ! os.exists(p.dl + '/' + os.base(src)) {
-			os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + os.base(src))
+		mut source := src
+		mut filename := os.base(src)
+
+		if src.contains('::') {
+			source = src.all_before('::')
+			filename = src.all_after('::')
+		}
+
+		if p.util.is_archive(filename) || source.contains('git') {
+			p.archives[filename] = p.util.strip_extension(filename)
+		}
+
+		p.sources[source] = filename
+	}
+
+	for src, filename in p.sources {
+		if ! os.exists(p.dl + '/' + filename) {
+			os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
 		}
 	}
 }
@@ -46,8 +69,9 @@ pub fn (mut p Package) download() {
 pub fn (mut p Package) extract() {
 	os.mkdir(p.bl) or { }
 
-	for src in p.data['src'] {
-		os.system('bash ' + p.cfgdata.stuff + '/extract.sh ' + p.dl + '/' + os.base(src) + ' ' + p.bl)
+	for src, filename in p.archives {
+		os.mkdir(p.bl + '/' + filename) or { }
+		os.system('bash ' + p.cfgdata.stuff + '/extract.sh ' + p.dl + '/' + src + ' ' + p.bl + '/' + filename)
 	}
 }
 

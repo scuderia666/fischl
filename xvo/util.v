@@ -12,6 +12,39 @@ pub mut:
 	bldir string
 }
 
+pub struct Util {
+pub mut:
+	archive_exts []string
+}
+
+pub fn (mut u Util) init() {
+	u.archive_exts << 'tar.gz'
+	u.archive_exts << 'tar.xz'
+	u.archive_exts << 'tar.bz2'
+	u.archive_exts << 'tar.lz'
+	u.archive_exts << 'zip'
+}
+
+pub fn (u Util) is_archive(filename string) bool {
+	for ext in u.archive_exts {
+		if filename.contains('.' + ext) {
+			return true
+		}
+	}
+
+	return false
+}
+
+pub fn (u Util) strip_extension(filename string) string {
+	for ext in u.archive_exts {
+		if filename.contains('.' + ext) {
+			return filename.all_before('.' + ext)
+		}
+	}
+
+	return ''
+}
+
 pub fn makedir(dir string) bool {
 	if os.exists(dir) && os.is_dir(dir) {
 		return false
