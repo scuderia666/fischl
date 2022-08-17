@@ -88,13 +88,14 @@ pub fn (p Package) placeholders(str string) string {
 	mut placeholders := p.vars.clone()
 
 	placeholders['files'] = p.files
+	placeholders['stuff'] = p.cfgdata.stuff
 
 	result = util.apply_placeholders(result, placeholders)
 
 	return result
 }
 
-pub fn (mut p Package) start_build() {
+pub fn (mut p Package) create_script() {
 	script := p.bl + '/build.sh'
 
 	if os.exists(script) {
@@ -103,11 +104,11 @@ pub fn (mut p Package) start_build() {
 
 	mut f := os.create(script) or { panic(err) }
 
-	f.write_string('#!/bin/sh' + '\r\n') or { }
-	f.write_string('source common.sh' + '\r\n') or { }
+	f.write_string('#!/bin/sh' + '\n') or { }
+	f.write_string('source common.sh' + '\n') or { }
 
 	if p.archives.len == 1 {
-		f.write_string('cd ' + p.archives.values()[0] + '\r\n') or { }
+		f.write_string('cd ' + p.archives.values()[0] + '\n') or { }
 	}
 
 	common := p.bl + '/common.sh'
@@ -121,8 +122,15 @@ pub fn (mut p Package) start_build() {
 	mut lines := os.read_lines(p.cfgdata.stuff + '/common.sh') or { panic(err) }
 
 	for line in lines {
-		common_f.write_string(p.placeholders(line) + '\r\n') or { }
+		common_f.write_string(p.placeholders(line) + '\n') or { }
 	}
+
+	for line in p.data['build'] {
+		f.write_string(p.placeholders(line) + '\n') or { }
+	}
+
+	f.close()
+	common_f.close()
 }
 
 pub fn (mut p Package) build() {
@@ -130,5 +138,10 @@ pub fn (mut p Package) build() {
 	os.mkdir(p.bl) or { }
 	p.download()
 	p.extract()
-	p.start_build()
+	p.create_script()
+	os.chdir(p.bl) or { }
+	os.system('chmod 777 build.sh')
+	os.system('chmod 777 common.sh')
+	os.system('sh build.sh')
+	os.chdir(p.bl + '/..') or { }
 }

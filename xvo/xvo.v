@@ -2,16 +2,16 @@ module xvo
 
 import os
 import util
-import prog { Program }
+import pkg { Package }
 
-pub struct Xvo {
+pub struct Program {
 pub mut:
-	prog Program
+	packages map[string]Package
 	cfg map[string]string
 	cfgdata util.Data
 }
 
-pub fn (mut x Xvo) start() {
+pub fn (mut p Program) start() {
 	cwd := os.getwd()
 
 	mut placeholders := map[string]string
@@ -20,18 +20,46 @@ pub fn (mut x Xvo) start() {
 
 	vars := ['root', 'src', 'work']
 
-	x.cfg = util.read_config(cwd + '/config', vars, placeholders)
+	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
 
-	x.cfgdata.rootdir = x.cfg['root']
-	x.cfgdata.srcdir = x.cfg['src']
-	x.cfgdata.pkgdir = x.cfgdata.srcdir + '/pkg'
-	x.cfgdata.stuff = x.cfgdata.srcdir + '/stuff'
-	x.cfgdata.dldir = x.cfg['work'] + '/dl'
-	x.cfgdata.bldir = x.cfg['work'] + '/build'
+	p.cfgdata.rootdir = p.cfg['root']
+	p.cfgdata.srcdir = p.cfg['src']
+	p.cfgdata.pkgdir = p.cfgdata.srcdir + '/pkg'
+	p.cfgdata.stuff = p.cfgdata.srcdir + '/stuff'
+	p.cfgdata.dldir = p.cfg['work'] + '/dl'
+	p.cfgdata.bldir = p.cfg['work'] + '/build'
 
-	os.mkdir(x.cfg['work']) or { }
-	os.mkdir(x.cfgdata.dldir) or { }
-	os.mkdir(x.cfgdata.bldir) or { }
+	os.mkdir(p.cfg['work']) or { }
+	os.mkdir(p.cfgdata.dldir) or { }
+	os.mkdir(p.cfgdata.bldir) or { }
+}
 
-	x.prog = Program{cfgdata: x.cfgdata}
+pub fn (mut p Program) read_package(name string) {
+	mut pkg := Package{name: name, cfgdata: p.cfgdata}
+
+	p.packages[name] = pkg
+}
+
+pub fn (p Program) do_build(pkgname string) {
+	mut pkg := p.packages[pkgname]
+
+	pkg.build()
+}
+
+pub fn (p Program) do_install(pkg string) {
+
+}
+
+pub fn (p Program) do_action(action string, pkg string) {
+	match action {
+		'build' {
+			p.do_build(pkg)
+		}
+
+		'install' {
+			p.do_install(pkg)
+		}
+
+		else { }
+	}
 }
