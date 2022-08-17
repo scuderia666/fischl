@@ -28,9 +28,9 @@ pub fn (mut p Package) read(pkgfile string) {
 }
 
 pub fn (mut p Package) download() {
-	/*for src in p.data['src'] {
-		println(src)
-	}*/
+	for src in p.data['src'] {
+
+	}
 }
 
 pub fn (mut p Package) build() {

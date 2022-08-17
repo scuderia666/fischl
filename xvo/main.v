@@ -70,13 +70,10 @@ fn usage() {
 
 fn main() {
 	mut args := vargs.new(os.args, 1)
-
 	args.alias('W', 'with')
-
 	args.parse()
 
 	mut p := Program{}
-
 	p.start()
 
 	if args.command.len == 0 {
