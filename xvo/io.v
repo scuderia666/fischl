@@ -2,8 +2,22 @@ module io
 
 import os
 
-pub fn read_variables() {
+pub fn read_vars(lines []string, vars []string) map[string]string {
+	mut result := map[string]string
 
+	for line in lines {
+		if line.len == 0 { continue }
+		if line[0].ascii_str() == '#' && line[1].ascii_str() != '!' { continue }
+		if line[0].ascii_str() == '[' && line[line.len-1].ascii_str() == ']' { break }
+
+		for var in vars {
+			if line.contains(var) {
+				result[var] = line.after(var).trim(' ')
+			}
+		}
+	}
+
+	return result
 }
 
 pub fn read_file(file string) []string {

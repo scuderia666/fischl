@@ -1,6 +1,6 @@
 import os
 import vargs
-import lol
+//import lol
 import pkg { Package }
 
 const (
@@ -33,8 +33,6 @@ fn (p Program) do_install(pkg string) {
 }
 
 fn (p Program) do_action(action string, pkg string) {
-	println('$action: $pkg')
-
 	match action {
 		'build' {
 			p.do_build(pkg)
@@ -97,9 +95,9 @@ fn main() {
 		println('with? ' + args.options['with'])
 	}
 
-    lold := lol.Lol{lol.Config{
+    /*lold := lol.Lol{lol.Config{
     	style: lol.Style.normal
     }}
 
-    lold.print('xvo v${version}')
+    lold.print('xvo v${version}')*/
 }
