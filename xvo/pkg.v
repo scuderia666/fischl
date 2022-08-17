@@ -7,7 +7,7 @@ import util
 pub struct Package {
 pub mut:
 	name string [required]
-	cfg map[string]string [required]
+	//prog Program [required]
 	data map[string][]string
 	vars map[string]string
 }
@@ -28,12 +28,14 @@ pub fn (mut p Package) read(pkgfile string) {
 }
 
 pub fn (mut p Package) download() {
+	//os.mkdir(p.prog.dldir + '/$name')
+
 	for src in p.data['src'] {
 
 	}
 }
 
 pub fn (mut p Package) build() {
-	p.read(p.cfg['pkgdir'] + '/$p.name')
+	//p.read(p.prog.cfg['pkg'] + '/$p.name')
 	p.download()
 }

@@ -1,67 +1,11 @@
 import os
 import vargs
 //import lol
-import pkg { Package }
-import util
+import xvo { Program }
 
 const (
 	version = '0.1'
 )
-
-struct Program {
-mut:
-	packages map[string]Package
-	cfg map[string]string
-	rootdir string
-	srcdir string
-	pkgdir string
-}
-
-fn (mut p Program) start() {
-	cwd := os.getwd()
-
-	mut placeholders := map[string]string
-
-	placeholders['pwd'] = cwd
-
-	vars := ['rootdir', 'srcdir', 'pkgdir']
-
-	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
-
-	p.rootdir = p.cfg['rootdir']
-	p.srcdir = p.cfg['srcdir']
-	p.pkgdir = p.cfg['pkgdir']
-}
-
-fn (mut p Program) read_package(name string) {
-	mut pkg := Package{name: name, cfg: p.cfg}
-
-	p.packages[name] = pkg
-}
-
-fn (p Program) do_build(pkgname string) {
-	mut pkg := p.packages[pkgname]
-
-	pkg.build()
-}
-
-fn (p Program) do_install(pkg string) {
-
-}
-
-fn (p Program) do_action(action string, pkg string) {
-	match action {
-		'build' {
-			p.do_build(pkg)
-		}
-
-		'install' {
-			p.do_install(pkg)
-		}
-
-		else { }
-	}
-}
 
 fn usage() {
 	println("xvo build|install <pkg>")
