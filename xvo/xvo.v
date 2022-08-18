@@ -53,11 +53,13 @@ pub fn (mut p Program) start() {
 	p.cfgdata.stuff = p.cfg['src'] + '/stuff'
 	p.cfgdata.dldir = p.cfg['work'] + '/dl'
 	p.cfgdata.bldir = p.cfg['work'] + '/build'
+	p.cfgdata.built = p.cfg['work'] + '/built'
 
 	os.mkdir(p.cfg['src']) or { }
 	os.mkdir(p.cfg['work']) or { }
 	os.mkdir(p.cfgdata.dldir) or { }
 	os.mkdir(p.cfgdata.bldir) or { }
+	os.mkdir(p.cfgdata.built) or { }
 }
 
 pub fn (mut p Program) dependency(pkgname string) {
@@ -105,7 +107,11 @@ pub fn (mut p Program) read_package(name string) {
 	p.packages[name] = pkg
 }
 
-pub fn (mut p Program) do_build(pkgname string) {
+pub fn (mut p Program) get_depends(pkgname string) string {
+	if p.dependencies.len != 0 {
+		return ''
+	}
+
 	p.dependency(pkgname)
 
 	mut pool := ''
@@ -115,12 +121,16 @@ pub fn (mut p Program) do_build(pkgname string) {
 	}
 
 	if pool.len == 0 {
-		return
+		return ''
 	}
 
-	pool = pool.substr(0, pool.len-2)
+	return pool.substr(0, pool.len-2)
+}
 
-	log.info('following packages will be installed: ' + pool)
+pub fn (mut p Program) do_build(pkgname string) {
+	pool := p.get_depends(pkgname)
+
+	log.info('following packages will be built: ' + pool)
 
 	log.info_print('do you want to continue? (y/n) ')
 	value := os.input('')
@@ -135,12 +145,49 @@ pub fn (mut p Program) do_build(pkgname string) {
 	}
 }
 
-pub fn (p Program) do_install(pkg string) {
+pub fn (mut p Program) do_install(pkgname string) {
+	pool := p.get_depends(pkgname)
 
+	log.info('following packages will be installed: ' + pool)
+
+	log.info_print('do you want to continue? (y/n) ')
+	value := os.input('')
+
+	if value != 'y' {
+		log.info('cancelled.')
+		return
+	}
+
+	for dep in p.dependencies {
+		p.packages[dep].install()
+	}
+}
+
+pub fn (mut p Program) emerge(pkgname string) {
+	pool := p.get_depends(pkgname)
+
+	log.info('following packages will be installed: ' + pool)
+
+	log.info_print('do you want to continue? (y/n) ')
+	value := os.input('')
+
+	if value != 'y' {
+		log.info('cancelled.')
+		return
+	}
+
+	for dep in p.dependencies {
+		p.packages[dep].build()
+		p.packages[dep].install()
+	}
 }
 
 pub fn (mut p Program) do_action(action string, pkg string) {
 	match action {
+		'emerge' {
+			p.emerge(pkg)
+		}
+
 		'build' {
 			p.do_build(pkg)
 		}

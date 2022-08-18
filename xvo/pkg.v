@@ -16,6 +16,7 @@ pub mut:
 
 	dl string
 	bl string
+	dest string
 	files string
 
 	sources map[string]string
@@ -29,7 +30,7 @@ pub fn (mut p Package) read(pkgfile string) {
 
 	mut lines := os.read_lines(pkgfile) or { panic(err) }
 
-	vars := ['ver']
+	vars := ['ver', 'workdir']
 	sects := ['src', 'deps', 'build']
 
 	p.vars = util.read_vars(lines, vars)
@@ -43,6 +44,7 @@ pub fn (mut p Package) read(pkgfile string) {
 
 	p.dl = p.cfgdata.dldir + '/$p.name'
 	p.bl = p.cfgdata.bldir + '/$p.name'
+	p.dest = p.bl + '/out'
 	p.files = p.cfgdata.stuff + '/$p.name'
 
 	p.util.init()
@@ -100,9 +102,17 @@ pub fn (mut p Package) get_sources() {
 	for src, filename in p.sources {
 		if src.contains('git') {
 			os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
+
+			if ! os.exists(p.bl + '/' + filename) {
+				return
+			}
 		} else {
 			if ! os.exists(p.dl + '/' + filename) {
 				os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
+
+				if ! os.exists(p.dl + '/' + filename) {
+					return
+				}
 			}
 		}
 	}
@@ -125,6 +135,10 @@ pub fn (p Package) placeholders(str string) string {
 
 	placeholders['stuff'] = p.cfgdata.stuff
 	placeholders['files'] = p.files
+	placeholders['root'] = p.cfgdata.rootdir
+	placeholders['dest'] = p.dest
+	placeholders['make'] = 'make -j2'
+	placeholders['prefix'] = ''
 
 	result = util.apply_placeholders(result, placeholders)
 
@@ -155,13 +169,29 @@ pub fn (mut p Package) create_script() {
 	f.close()
 }
 
+pub fn (mut p Package) package() {
+	if os.exists(p.dest) {
+		os.chdir(p.dest) or { }
+		os.system('bash ' + p.cfgdata.stuff + '/compress.sh ' + p.cfgdata.built + '/' + p.name + '.pkg')
+	}
+}
+
 pub fn (mut p Package) build() {
 	os.mkdir(p.bl) or { }
-	//p.get_sources()
-	//p.extract_sources()
+	p.get_sources()
+	p.extract_sources()
 	p.create_script()
+	if p.archives.len == 1 {
+		os.mkdir(p.dest) or { }
+	}
 	os.chdir(p.bl) or { }
 	os.system('chmod 777 build.sh')
 	os.system('sh build.sh')
+	p.package()
 	os.chdir(p.bl + '/..') or { }
+}
+
+pub fn (mut p Package) install() {
+	os.mkdir(p.cfgdata.rootdir) or { }
+	os.system('bash ' + p.cfgdata.stuff + '/install.sh ' + p.cfgdata.rootdir + ' ' + p.cfgdata.built + '/' + p.name + '.pkg')
 }

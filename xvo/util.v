@@ -11,6 +11,7 @@ pub mut:
 	stuff string
 	dldir string
 	bldir string
+	built string
 }
 
 pub struct Util {
