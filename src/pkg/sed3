@@ -4,8 +4,7 @@ ver 4.8
 https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
 
 [deps]
-sed3
-asd
+sed2
 
 [build]
 echo hi

@@ -1,6 +1,5 @@
 import os
-import vargs
-//import lol
+import util
 import xvo { Program }
 
 const (
@@ -13,7 +12,7 @@ fn usage() {
 }
 
 fn main() {
-	mut args := vargs.new(os.args, 1)
+	mut args := util.new(os.args, 1)
 	args.alias('W', 'with')
 	args.parse()
 
@@ -40,7 +39,6 @@ fn main() {
 
 	if args.unknown.len > 0 {
 		for pkg in args.unknown {
-			p.read_package(pkg)
 			p.do_action(action, pkg)
 		}
 	}
@@ -52,10 +50,4 @@ fn main() {
 
 		println('with? ' + args.options['with'])
 	}
-
-    /*lold := lol.Lol{lol.Config{
-    	style: lol.Style.normal
-    }}
-
-    lold.print('xvo v${version}')*/
 }

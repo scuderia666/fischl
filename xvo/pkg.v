@@ -10,6 +10,8 @@ pub mut:
 	data map[string][]string
 	vars map[string]string
 
+	is_read bool
+
 	util util.Util
 
 	dl string
@@ -21,10 +23,14 @@ pub mut:
 }
 
 pub fn (mut p Package) read(pkgfile string) {
+	if p.is_read {
+		return
+	}
+
 	mut lines := os.read_lines(pkgfile) or { panic(err) }
 
 	vars := ['ver']
-	sects := ['src', 'build']
+	sects := ['src', 'deps', 'build']
 
 	p.vars = util.read_vars(lines, vars)
 	p.vars['name'] = p.name
@@ -40,11 +46,37 @@ pub fn (mut p Package) read(pkgfile string) {
 	p.files = p.cfgdata.stuff + '/$p.name'
 
 	p.util.init()
+
+	p.is_read = true
 }
 
-pub fn (mut p Package) download() {
-	os.mkdir(p.dl) or { }
+pub fn (p Package) get_deps() []string {
+	mut deps := []string{}
 
+	for dep in p.data['deps'] {
+		deps << dep
+	}
+
+	return deps
+}
+
+pub fn (p Package) is_yes(val string) bool {
+	if val in p.vars {
+		return p.vars[val] == 'yes'
+	}
+
+	return false
+}
+
+pub fn (p Package) is_no(val string) bool {
+	if val in p.vars {
+		return p.vars[val] == 'no'
+	}
+
+	return false
+}
+
+pub fn (mut p Package) get_sources() {
 	for src in p.data['src'] {
 		mut source := src
 		mut filename := os.base(src)
@@ -61,9 +93,13 @@ pub fn (mut p Package) download() {
 		p.sources[source] = filename
 	}
 
+	if p.sources.len != 0 {
+		os.mkdir(p.dl) or { }
+	}
+
 	for src, filename in p.sources {
 		if src.contains('git') {
-			os.system('git clone ' + src + ' ' + p.bl + '/' + filename)
+			os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
 		} else {
 			if ! os.exists(p.dl + '/' + filename) {
 				os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
@@ -72,7 +108,7 @@ pub fn (mut p Package) download() {
 	}
 }
 
-pub fn (mut p Package) extract() {
+pub fn (mut p Package) extract_sources() {
 	for src, filename in p.archives {
 		os.mkdir(p.bl + '/' + filename) or { }
 
@@ -87,8 +123,8 @@ pub fn (p Package) placeholders(str string) string {
 
 	mut placeholders := p.vars.clone()
 
-	placeholders['files'] = p.files
 	placeholders['stuff'] = p.cfgdata.stuff
+	placeholders['files'] = p.files
 
 	result = util.apply_placeholders(result, placeholders)
 
@@ -105,24 +141,11 @@ pub fn (mut p Package) create_script() {
 	mut f := os.create(script) or { panic(err) }
 
 	f.write_string('#!/bin/sh' + '\n') or { }
-	f.write_string('source common.sh' + '\n') or { }
 
 	if p.archives.len == 1 {
 		f.write_string('cd ' + p.archives.values()[0] + '\n') or { }
-	}
-
-	common := p.bl + '/common.sh'
-
-	if os.exists(common) {
-		os.rm(common) or { }
-	}
-
-	mut common_f := os.create(common) or { panic(err) }
-
-	mut lines := os.read_lines(p.cfgdata.stuff + '/common.sh') or { panic(err) }
-
-	for line in lines {
-		common_f.write_string(p.placeholders(line) + '\n') or { }
+	} else if 'workdir' in p.vars {
+		f.write_string('cd ' + p.vars['workdir'] + '\n') or { }
 	}
 
 	for line in p.data['build'] {
@@ -130,18 +153,15 @@ pub fn (mut p Package) create_script() {
 	}
 
 	f.close()
-	common_f.close()
 }
 
 pub fn (mut p Package) build() {
-	p.read(p.cfgdata.pkgdir + '/$p.name')
 	os.mkdir(p.bl) or { }
-	p.download()
-	p.extract()
+	//p.get_sources()
+	//p.extract_sources()
 	p.create_script()
 	os.chdir(p.bl) or { }
 	os.system('chmod 777 build.sh')
-	os.system('chmod 777 common.sh')
 	os.system('sh build.sh')
 	os.chdir(p.bl + '/..') or { }
 }

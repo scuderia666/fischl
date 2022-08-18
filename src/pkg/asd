@@ -3,10 +3,6 @@ ver 4.8
 [src]
 https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
 
-[deps]
-sed3
-asd
-
 [build]
 echo hi
 echo hi2
