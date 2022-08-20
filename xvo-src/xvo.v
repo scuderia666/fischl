@@ -35,17 +35,7 @@ pub fn (mut p Program) start(opts map[string]string) bool {
 
 	vars := arrays.merge(['root', 'src', 'work', 'db'], opts.keys())
 
-	mut config := ''
-
-	if os.exists(cwd + '/config') {
-		config = cwd + '/config'
-	} else if os.exists('/etc/xvo.conf') {
-		config = '/etc/xvo.conf'
-	} else {
-		return false
-	}
-
-	p.cfg = util.read_config(config, vars, placeholders)
+	p.cfg = util.read_config(options['config'], vars, placeholders)
 
 	for opt in options.keys() {
 		if opt in p.cfg.keys() {

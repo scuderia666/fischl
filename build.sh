@@ -16,4 +16,8 @@ if [[ ! -f xvo ]]; then
 	exit 1
 fi
 
-./xvo emerge musl
+emerge() {
+	./xvo emerge $1 -config %pwd/config
+}
+
+emerge musl

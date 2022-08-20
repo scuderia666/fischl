@@ -48,6 +48,7 @@ fn main() {
 	mut options := {
 		'rebuild': 'no',
 		'debug': 'no',
+		'config': '/etc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}
 
@@ -55,12 +56,16 @@ fn main() {
 		for opt, val in options {
 			if opt in args.options.keys() {
 				if args.options[opt] != '' {
-					options[opt] = args.options[opt]
+					options[opt] = args.options[opt].replace('%pwd', os.getwd())
 				} else if val == 'no' {
 					options[opt] = 'yes'
 				}
 			}
 		}
+	}
+
+	if ! os.exists(options['config']) {
+		exit(1)
 	}
 
 	if options['jobs'].int() > runtime.nr_cpus() + 1 {
