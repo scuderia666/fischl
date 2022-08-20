@@ -1,0 +1,10 @@
+ver 1.2.2
+
+[src]
+https://musl.libc.org/releases/%name-%ver.tar.gz
+
+[build]
+./configure \
+	--prefix=%prefix
+
+%make && make DESTDIR=%dest install

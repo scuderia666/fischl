@@ -24,7 +24,7 @@ pub mut:
 	marked []string
 }
 
-pub fn (mut p Program) start(opts map[string]string) {
+pub fn (mut p Program) start(opts map[string]string) bool {
 	mut options := opts.clone()
 
 	cwd := os.getwd()
@@ -35,7 +35,17 @@ pub fn (mut p Program) start(opts map[string]string) {
 
 	vars := arrays.merge(['root', 'src', 'work', 'db'], opts.keys())
 
-	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
+	mut config := ''
+
+	if os.exists(cwd + '/config') {
+		config = cwd + '/config'
+	} else if os.exists('/etc/xvo.conf') {
+		config = '/etc/xvo.conf'
+	} else {
+		return false
+	}
+
+	p.cfg = util.read_config(config, vars, placeholders)
 
 	for opt in options.keys() {
 		if opt in p.cfg.keys() {
@@ -50,7 +60,8 @@ pub fn (mut p Program) start(opts map[string]string) {
 	p.options = options.clone()
 
 	if !('root' in p.cfg) {
-		return
+		log.err('define root variable in config')
+		return false
 	}
 
 	if ! os.exists(p.cfg['root']) {
@@ -83,6 +94,8 @@ pub fn (mut p Program) start(opts map[string]string) {
 	os.mkdir(p.cfgdata.dldir) or { }
 	os.mkdir(p.cfgdata.bldir) or { }
 	os.mkdir(p.cfgdata.built) or { }
+
+	return true
 }
 
 pub fn (mut p Program) dependency(pkgname string) {

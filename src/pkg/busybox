@@ -1,0 +1,12 @@
+ver 1.35.0
+
+[src]
+https://busybox.net/downloads/%name-%ver.tar.bz2
+
+[build]
+cp %files/config .config
+%make busybox
+make \
+	CONFIG_PREFIX=%dest \
+	install
+rm -f %dest/linuxrc
