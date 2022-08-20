@@ -1,6 +1,6 @@
 import os
 import util
-import xvo { Program }
+import xvo { Program, Action }
 import runtime
 
 const (
@@ -21,19 +21,23 @@ fn main() {
 		exit(1)
 	}
 
-	mut action := ''
+	mut action := Action{}
 
 	match args.command {
 		'build' {
-			action = 'build'
+			action = Action.build
 		}
 
 		'install' {
-			action = 'install'
+			action = Action.install
 		}
 
 		'emerge' {
-			action = 'emerge'
+			action = Action.emerge
+		}
+
+		'remove' {
+			action = Action.remove
 		}
 
 		else { usage() }

@@ -260,13 +260,15 @@ pub fn (mut p Package) build() bool {
 	return true
 }
 
-pub fn (mut p Package) install() {
+pub fn (p Package) install() bool {
 	if os.exists(p.cfgdata.dbdir + '/' + p.name) {
-		return
+		log.err('package is already installed')
+		return false
 	}
 
 	if ! os.exists(p.cfgdata.built + '/' + p.name + '.pkg') {
-		return
+		log.err('package is not built')
+		return false
 	}
 
 	os.mkdir(p.cfgdata.rootdir) or { }
@@ -275,4 +277,22 @@ pub fn (mut p Package) install() {
 	os.mkdir(p.cfgdata.dbdir + '/' + p.name) or { }
 	os.mv(p.cfgdata.rootdir + '/pkginfo', p.cfgdata.dbdir + '/' + p.name) or { }
 	os.system('bash ' + p.cfgdata.stuff + '/create_filelist.sh ' + p.cfgdata.built + '/' + p.name + '.pkg ' + p.cfgdata.dbdir + '/' + p.name + '/files')
+
+	log.info('$p.name is installed successfully')
+
+	return true
+}
+
+pub fn (p Package) remove() bool {
+	if ! os.exists(p.cfgdata.dbdir + '/' + p.name) {
+		log.err('package is not installed')
+		return false
+	}
+
+	os.system('bash ' + p.cfgdata.stuff + '/list_uninstall.sh ' + p.cfgdata.dbdir + '/' + p.name + '/files ' + p.cfgdata.rootdir)
+	os.rm(p.cfgdata.dbdir + '/' + p.name) or { }
+
+	log.info('$p.name is removed successfully')
+
+	return true
 }

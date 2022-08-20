@@ -6,6 +6,13 @@ import log
 import arrays
 import pkg { Package }
 
+pub enum Action {
+	emerge
+	build
+	install
+	remove
+}
+
 pub struct Program {
 pub mut:
 	packages map[string]Package
@@ -179,6 +186,11 @@ pub fn (mut p Program) do_install(pkgname string) {
 	}
 }
 
+pub fn (mut p Program) do_uninstall(pkgname string) {
+	p.read_package(pkgname)
+	p.packages[pkgname].remove()
+}
+
 pub fn (mut p Program) emerge(pkgname string) {
 	pool := p.get_depends(pkgname)
 
@@ -198,18 +210,22 @@ pub fn (mut p Program) emerge(pkgname string) {
 	}
 }
 
-pub fn (mut p Program) do_action(action string, pkg string) {
+pub fn (mut p Program) do_action(Action action, pkg string) {
 	match action {
-		'emerge' {
+		.emerge {
 			p.emerge(pkg)
 		}
 
-		'build' {
+		.build {
 			p.do_build(pkg)
 		}
 
-		'install' {
+		.install {
 			p.do_install(pkg)
+		}
+
+		.remove {
+			p.do_uninstall(pkg)
 		}
 
 		else { }
