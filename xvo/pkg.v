@@ -135,7 +135,7 @@ pub fn (mut p Package) get_sources() bool {
 pub fn (mut p Package) extract_sources() bool {
 	for src, filename in p.archives {
 		if os.exists(p.bl + '/' + filename) {
-			os.rm(p.bl + '/' + filename) or { }
+			os.rmdir_all(p.bl + '/' + filename) or { }
 		}
 
 		os.mkdir(p.bl + '/' + filename) or { }
@@ -249,7 +249,7 @@ pub fn (mut p Package) build() bool {
 	}
 	p.create_script()
 	if os.exists(p.dest) {
-		os.rm(p.dest) or { }
+		os.rmdir_all(p.dest) or { }
 	}
 	if p.archives.len == 1 {
 		os.mkdir(p.dest) or { }
@@ -297,7 +297,7 @@ pub fn (p Package) remove() bool {
 	}
 
 	os.system('bash ' + p.cfgdata.stuff + '/list_uninstall.sh ' + p.cfgdata.dbdir + '/' + p.name + '/files ' + p.cfgdata.rootdir)
-	os.rm(p.cfgdata.dbdir + '/' + p.name) or { }
+	os.rmdir_all(p.cfgdata.dbdir + '/' + p.name) or { }
 
 	log.info('$p.name is removed successfully')
 
