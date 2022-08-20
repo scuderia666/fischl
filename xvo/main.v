@@ -1,6 +1,7 @@
 import os
 import util
 import xvo { Program }
+import runtime
 
 const (
 	version = '0.1'
@@ -40,23 +41,31 @@ fn main() {
 
 	mut p := Program{}
 
-	mut options := ['rebuild', 'debug']
-
-	mut opts := map[string]string
-
-	for opt in options {
-		opts[opt] = 'no'
+	mut options := {
+		'rebuild': 'no',
+		'debug': 'no',
+		'jobs': runtime.nr_cpus().str()
 	}
 
 	if args.options.len > 0 {
-		for opt in options {
+		for opt, val in options {
 			if opt in args.options.keys() {
-				opts[opt] = 'yes'
+				if args.options[opt] != '' {
+					options[opt] = args.options[opt]
+				} else if val == 'no' {
+					options[opt] = 'yes'
+				}
 			}
 		}
 	}
 
-	p.start(opts)
+	if options['jobs'].int() > runtime.nr_cpus() + 1 {
+		options['jobs'] = (runtime.nr_cpus() + 1).str()
+	} else if options['jobs'].int() < 1 {
+		options['jobs'] = '1'
+	}
+
+	p.start(options)
 
 	if args.unknown.len > 0 {
 		for pkg in args.unknown {

@@ -198,6 +198,8 @@ pub fn (mut p Package) create_script() {
 
 pub fn (mut p Package) package() {
 	if os.exists(p.dest) {
+		log.info('packaging')
+
 		mut f := os.create(p.dest + '/pkginfo') or { panic(err) }
 
 		f.write_string('ver ' + p.vars['ver'] + '\n') or { }

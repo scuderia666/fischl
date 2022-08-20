@@ -3,6 +3,7 @@ module xvo
 import os
 import util
 import log
+import arrays
 import pkg { Package }
 
 pub struct Program {
@@ -25,7 +26,7 @@ pub fn (mut p Program) start(opts map[string]string) {
 
 	placeholders['pwd'] = cwd
 
-	vars := ['root', 'src', 'work', 'db', 'debug']
+	vars := arrays.merge(['root', 'src', 'work', 'db'], opts.keys())
 
 	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
 
@@ -33,6 +34,8 @@ pub fn (mut p Program) start(opts map[string]string) {
 		if opt in p.cfg.keys() {
 			if p.cfg[opt] == 'yes' {
 				options[opt] = 'yes'
+			} else {
+				options[opt] = p.cfg[opt]
 			}
 		}
 	}
@@ -73,8 +76,6 @@ pub fn (mut p Program) start(opts map[string]string) {
 	os.mkdir(p.cfgdata.dldir) or { }
 	os.mkdir(p.cfgdata.bldir) or { }
 	os.mkdir(p.cfgdata.built) or { }
-
-	println(p.options['debug'])
 }
 
 pub fn (mut p Program) dependency(pkgname string) {
