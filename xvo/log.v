@@ -3,16 +3,21 @@ module log
 import term
 import math
 
-pub fn info(str string) {
-	info_print('$str\n')
+pub fn info(msg string) {
+	//info_print('$msg\n')
+	println(msg)
 }
 
-pub fn info_print(str string) {
-	print(term.rgb(128, 0, 0, str))
+pub fn err(msg string) {
+	println('[!] $msg')
 }
 
-pub fn info_lol(s string) {
-	println(lol_string(s))
+pub fn info_print(msg string) {
+	print(term.rgb(128, 0, 0, msg))
+}
+
+pub fn info_lol(msg string) {
+	println(lol_string(msg))
 }
 
 pub fn lol_string(s string) string {

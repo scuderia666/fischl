@@ -66,7 +66,7 @@ pub fn read_vars(lines []string, vars []string) map[string]string {
 		if line[0].ascii_str() == '[' && line[line.len-1].ascii_str() == ']' { break }
 
 		for var in vars {
-			if line.contains(var) {
+			if line.contains(var) && !(var in result.keys()) {
 				result[var] = line.all_after_first(var).trim(' ')
 			}
 		}

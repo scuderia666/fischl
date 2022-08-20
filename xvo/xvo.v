@@ -10,21 +10,34 @@ pub mut:
 	packages map[string]Package
 	cfg map[string]string
 	cfgdata util.Data
+	options map[string]string
 
 	dependencies []string
 	marked []string
 }
 
-pub fn (mut p Program) start() {
+pub fn (mut p Program) start(opts map[string]string) {
+	mut options := opts.clone()
+
 	cwd := os.getwd()
 
 	mut placeholders := map[string]string
 
 	placeholders['pwd'] = cwd
 
-	vars := ['root', 'src', 'work']
+	vars := ['root', 'src', 'work', 'db', 'debug']
 
 	p.cfg = util.read_config(cwd + '/config', vars, placeholders)
+
+	for opt in options.keys() {
+		if opt in p.cfg.keys() {
+			if p.cfg[opt] == 'yes' {
+				options[opt] = 'yes'
+			}
+		}
+	}
+
+	p.options = options.clone()
 
 	if !('root' in p.cfg) {
 		return
@@ -60,6 +73,8 @@ pub fn (mut p Program) start() {
 	os.mkdir(p.cfgdata.dldir) or { }
 	os.mkdir(p.cfgdata.bldir) or { }
 	os.mkdir(p.cfgdata.built) or { }
+
+	println(p.options['debug'])
 }
 
 pub fn (mut p Program) dependency(pkgname string) {
@@ -100,7 +115,7 @@ pub fn (mut p Program) read_package(name string) {
 		return
 	}
 
-	mut pkg := Package{name: name, cfgdata: p.cfgdata}
+	mut pkg := Package{name: name, cfgdata: p.cfgdata, options: p.options}
 
 	pkg.read(p.cfgdata.pkgdir + '/$name')
 

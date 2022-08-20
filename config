@@ -1,3 +1,6 @@
 root %pwd/rootfs
 src %pwd/src
 work %pwd/work
+db %pwd/work/db
+
+debug yes

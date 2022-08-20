@@ -1,12 +1,14 @@
 module pkg
 
 import os
+import log
 import util
 
 pub struct Package {
 pub mut:
 	name string [required]
 	cfgdata util.Data [required]
+	options map[string]string [required]
 	data map[string][]string
 	vars map[string]string
 
@@ -25,6 +27,10 @@ pub mut:
 
 pub fn (mut p Package) read(pkgfile string) {
 	if p.is_read {
+		return
+	}
+
+	if ! os.exists(pkgfile) {
 		return
 	}
 
@@ -78,7 +84,7 @@ pub fn (p Package) is_no(val string) bool {
 	return false
 }
 
-pub fn (mut p Package) get_sources() {
+pub fn (mut p Package) get_sources() bool {
 	for src in p.data['src'] {
 		mut source := src
 		mut filename := os.base(src)
@@ -101,31 +107,52 @@ pub fn (mut p Package) get_sources() {
 
 	for src, filename in p.sources {
 		if src.contains('git') {
-			os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
-
 			if ! os.exists(p.bl + '/' + filename) {
-				return
+				os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
+
+				if ! os.exists(p.bl + '/' + filename) {
+					log.err('couldnt clone $filename')
+					return false
+				}
 			}
 		} else {
 			if ! os.exists(p.dl + '/' + filename) {
 				os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
 
 				if ! os.exists(p.dl + '/' + filename) {
-					return
+					log.err('couldnt download $filename')
+					return false
 				}
+			} else {
+				println('already downloaded: $filename')
 			}
 		}
 	}
+
+	return true
 }
 
-pub fn (mut p Package) extract_sources() {
+pub fn (mut p Package) extract_sources() bool {
 	for src, filename in p.archives {
+		if os.exists(p.bl + '/' + filename) {
+			os.rm(p.bl + '/' + filename) or { }
+		}
+
 		os.mkdir(p.bl + '/' + filename) or { }
 
 		if ! src.contains('git') {
+			log.info('extracting source: $src')
+
 			os.system('bash ' + p.cfgdata.stuff + '/extract.sh ' + p.dl + '/' + src + ' ' + p.bl + '/' + filename)
+
+			if ! os.exists(p.bl + '/' + filename) {
+				log.err('couldnt extract source: $filename')
+				return false
+			}
 		}
 	}
+
+	return true
 }
 
 pub fn (p Package) placeholders(str string) string {
@@ -171,27 +198,79 @@ pub fn (mut p Package) create_script() {
 
 pub fn (mut p Package) package() {
 	if os.exists(p.dest) {
+		mut f := os.create(p.dest + '/pkginfo') or { panic(err) }
+
+		f.write_string('ver ' + p.vars['ver'] + '\n') or { }
+
+		if 'deps' in p.data.keys() {
+			f.write_string('\n[deps]' + '\n') or { }
+
+			for dep in p.data['deps'] {
+				f.write_string(dep + '\n') or { }
+			}
+		}
+
+		f.close()
+
 		os.chdir(p.dest) or { }
 		os.system('bash ' + p.cfgdata.stuff + '/compress.sh ' + p.cfgdata.built + '/' + p.name + '.pkg')
 	}
 }
 
-pub fn (mut p Package) build() {
+pub fn (mut p Package) build() bool {
+	if os.exists(p.cfgdata.built + '/' + p.name + '.pkg') {
+		if p.options['rebuild'] != 'yes' {
+			log.err('package is already built, pass -rebuild to rebuild it.')
+			return false
+		} else {
+			println('rebuilding $p.name')
+		}
+	} else {
+		println('building $p.name')
+	}
+
 	os.mkdir(p.bl) or { }
-	p.get_sources()
-	p.extract_sources()
+	if ! p.get_sources() {
+		log.err('couldnt get sources')
+		return false
+	}
+	if ! p.extract_sources() {
+		log.err('couldnt extract sources')
+		return false
+	}
 	p.create_script()
+	if os.exists(p.dest) {
+		os.rm(p.dest) or { }
+	}
 	if p.archives.len == 1 {
 		os.mkdir(p.dest) or { }
 	}
 	os.chdir(p.bl) or { }
 	os.system('chmod 777 build.sh')
-	os.system('sh build.sh')
+	println('building')
+	if p.options['debug'] != 'yes' {
+		os.system('sh build.sh &>/dev/null')
+	} else {
+		os.system('sh build.sh')
+	}
 	p.package()
 	os.chdir(p.bl + '/..') or { }
+	return true
 }
 
 pub fn (mut p Package) install() {
+	if os.exists(p.cfgdata.dbdir + '/' + p.name) {
+		return
+	}
+
+	if ! os.exists(p.cfgdata.built + '/' + p.name + '.pkg') {
+		return
+	}
+
 	os.mkdir(p.cfgdata.rootdir) or { }
-	os.system('bash ' + p.cfgdata.stuff + '/install.sh ' + p.cfgdata.rootdir + ' ' + p.cfgdata.built + '/' + p.name + '.pkg')
+	os.mkdir(p.cfgdata.dbdir) or { }
+	os.system('bash ' + p.cfgdata.stuff + '/install.sh ' + p.cfgdata.rootdir + ' ' + p.cfgdata.built + '/' + p.name + '.pkg &>/dev/null')
+	os.mkdir(p.cfgdata.dbdir + '/' + p.name) or { }
+	os.mv(p.cfgdata.rootdir + '/pkginfo', p.cfgdata.dbdir + '/' + p.name) or { }
+	os.system('bash ' + p.cfgdata.stuff + '/create_filelist.sh ' + p.cfgdata.built + '/' + p.name + '.pkg ' + p.cfgdata.dbdir + '/' + p.name + '/files')
 }

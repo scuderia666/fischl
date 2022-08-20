@@ -4,6 +4,8 @@ ver 4.8
 https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
 
 [build]
+touch %dest/test
+exit 0
 ./configure \
 	--prefix=%prefix
 
