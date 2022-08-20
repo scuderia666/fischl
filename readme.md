@@ -5,6 +5,6 @@ fischl linux
 v run xvo-src emerge musl -config %pwd/config
 
 # todo
-[ ] option support
-[ ] section support
+[ ] option support \
+[ ] section support \
 [ ] patch support
