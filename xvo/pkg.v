@@ -108,7 +108,11 @@ pub fn (mut p Package) get_sources() bool {
 	for src, filename in p.sources {
 		if src.contains('git') {
 			if ! os.exists(p.bl + '/' + filename) {
-				os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
+				if p.options['debug'] != 'yes' {
+					os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename + ' &>/dev/null')
+				} else {
+					os.system('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
+				}
 
 				if ! os.exists(p.bl + '/' + filename) {
 					log.err('couldnt clone $filename')
@@ -117,7 +121,11 @@ pub fn (mut p Package) get_sources() bool {
 			}
 		} else {
 			if ! os.exists(p.dl + '/' + filename) {
-				os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
+				if p.options['debug'] != 'yes' {
+					os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename + ' &>/dev/null')
+				} else {
+					os.system('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
+				}
 
 				if ! os.exists(p.dl + '/' + filename) {
 					log.err('couldnt download $filename')
@@ -164,7 +172,7 @@ pub fn (p Package) placeholders(str string) string {
 	placeholders['files'] = p.files
 	placeholders['root'] = p.cfgdata.rootdir
 	placeholders['dest'] = p.dest
-	placeholders['make'] = 'make -j2'
+	placeholders['make'] = 'make -j ' + p.options['jobs']
 	placeholders['prefix'] = ''
 
 	result = util.apply_placeholders(result, placeholders)
