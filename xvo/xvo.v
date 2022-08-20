@@ -210,7 +210,7 @@ pub fn (mut p Program) emerge(pkgname string) {
 	}
 }
 
-pub fn (mut p Program) do_action(Action action, pkg string) {
+pub fn (mut p Program) do_action(action Action, pkg string) {
 	match action {
 		.emerge {
 			p.emerge(pkg)
@@ -227,7 +227,5 @@ pub fn (mut p Program) do_action(Action action, pkg string) {
 		.remove {
 			p.do_uninstall(pkg)
 		}
-
-		else { }
 	}
 }

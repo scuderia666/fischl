@@ -215,14 +215,21 @@ pub fn (mut p Package) package() {
 		f.close()
 
 		os.chdir(p.dest) or { }
+
+		if os.exists(p.cfgdata.built + '/' + p.name + '.pkg') {
+			os.rm(p.cfgdata.built + '/' + p.name + '.pkg') or { }
+		}
+
 		os.system('bash ' + p.cfgdata.stuff + '/compress.sh ' + p.cfgdata.built + '/' + p.name + '.pkg')
+
+		log.info('$p.name built successfully')
 	}
 }
 
 pub fn (mut p Package) build() bool {
 	if os.exists(p.cfgdata.built + '/' + p.name + '.pkg') {
 		if p.options['rebuild'] != 'yes' {
-			log.err('package is already built, pass -rebuild to rebuild it.')
+			log.err('package is already built, pass -rebuild to rebuild it')
 			return false
 		} else {
 			println('rebuilding $p.name')
