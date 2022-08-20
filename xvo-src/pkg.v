@@ -172,7 +172,7 @@ pub fn (p Package) placeholders(str string) string {
 	placeholders['files'] = p.files
 	placeholders['root'] = p.cfgdata.rootdir
 	placeholders['dest'] = p.dest
-	placeholders['make'] = 'make -j ' + p.options['jobs']
+	placeholders['make'] = 'make -j' + p.options['jobs']
 	placeholders['prefix'] = ''
 
 	result = util.apply_placeholders(result, placeholders)
