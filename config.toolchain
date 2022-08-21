@@ -1,0 +1,7 @@
+root %pwd/toolchain
+src %pwd/src_toolchain
+work %pwd/work_toolchain
+db %work/db
+
+debug yes
+jobs 3

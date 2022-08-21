@@ -149,7 +149,7 @@ pub fn (mut p Package) get_sources() bool {
 		os.mkdir(p.dl) or { }
 	}
 
-	mut i := 0
+	mut i := 1
 
 	for src, filename in p.sources {
 		if src.contains('git') {
@@ -187,7 +187,7 @@ pub fn (mut p Package) get_sources() bool {
 }
 
 pub fn (mut p Package) extract_sources() bool {
-	mut i := 0
+	mut i := 1
 
 	for src, filename in p.archives {
 		if os.exists(p.bl + '/' + filename) {
