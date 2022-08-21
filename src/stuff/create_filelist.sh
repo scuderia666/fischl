@@ -5,4 +5,4 @@ list_files() {
 	echo "$(bsdtar -tf "$1" | sed 's|./||')"
 }
 
-list_files $1 | sed -e 's/.pkginfo//' -e 's/.install//' | sed '/^\s*$/d' >> $2
+list_files $1 | sed -e 's/pkginfo//' -e 's/install//' | sed '/^\s*$/d' >> $2

@@ -46,8 +46,9 @@ fn main() {
 	mut p := Program{}
 
 	mut options := {
-		'rebuild': 'no',
-		'debug': 'no',
+		'rebuild': 'no'
+		'debug': 'no'
+		'deps': 'yes'
 		'config': '/etc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}
@@ -77,8 +78,6 @@ fn main() {
 	p.start(options)
 
 	if args.unknown.len > 0 {
-		for pkg in args.unknown {
-			p.do_action(action, pkg)
-		}
+		p.do_action(action, args.unknown)
 	}
 }

@@ -85,18 +85,26 @@ pub fn (mut p Program) start(opts map[string]string) bool {
 	os.mkdir(p.cfgdata.bldir) or { }
 	os.mkdir(p.cfgdata.built) or { }
 
+	os.chdir(p.cfgdata.srcdir) or { }
+
 	return true
 }
 
-pub fn (mut p Program) dependency(pkgname string) {
-	p.read_package(pkgname)
+pub fn (mut p Program) dependency(pkgname string, install bool) {
+	p.add_package(pkgname)
+
+	if install {
+		p.read_archive(pkgname)
+	} else {
+		p.read_package(pkgname)
+	}
 
 	deps := p.packages[pkgname].get_deps()
 
 	for dep in deps {
 		if !(dep in p.marked) {
 			p. marked << dep
-			p.dependency(dep)
+			p.dependency(dep, install)
 		}
 	}
 
@@ -121,24 +129,36 @@ pub fn (p Program) is_no(val string) bool {
 	return false
 }
 
-pub fn (mut p Program) read_package(name string) {
+pub fn (mut p Program) add_package(name string) {
 	if name in p.packages {
 		return
 	}
 
 	mut pkg := Package{name: name, cfgdata: p.cfgdata, options: p.options}
 
-	pkg.read(p.cfgdata.pkgdir + '/$name')
-
 	p.packages[name] = pkg
 }
 
-pub fn (mut p Program) get_depends(pkgname string) string {
-	if p.dependencies.len != 0 {
-		return ''
+pub fn (mut p Program) read_package(name string) {
+	if !(name in p.packages) {
+		return
 	}
 
-	p.dependency(pkgname)
+	p.packages[name].read(p.cfgdata.pkgdir + '/$name')
+}
+
+pub fn (mut p Program) read_archive(name string) {
+	if !(name in p.packages) {
+		return
+	}
+
+	p.packages[name].read_archive(p.packages[name].get_archive())
+}
+
+pub fn (mut p Program) get_depends(pkgs []string, install bool) string {
+	for pkg in pkgs {
+		p.dependency(pkg, install)
+	}
 
 	mut pool := ''
 
@@ -153,8 +173,8 @@ pub fn (mut p Program) get_depends(pkgname string) string {
 	return pool.substr(0, pool.len-2)
 }
 
-pub fn (mut p Program) do_build(pkgname string) {
-	pool := p.get_depends(pkgname)
+pub fn (mut p Program) do_build(pkgs []string) bool {
+	pool := p.get_depends(pkgs, false)
 
 	log.info('following packages will be built: ' + pool)
 
@@ -163,16 +183,20 @@ pub fn (mut p Program) do_build(pkgname string) {
 
 	if value != 'y' {
 		log.info('cancelled.')
-		return
+		return false
 	}
 
 	for dep in p.dependencies {
-		p.packages[dep].build()
+		if ! p.packages[dep].build() {
+			return false
+		}
 	}
+
+	return true
 }
 
-pub fn (mut p Program) do_install(pkgname string) {
-	pool := p.get_depends(pkgname)
+pub fn (mut p Program) do_install(pkgs []string) bool {
+	pool := p.get_depends(pkgs, true)
 
 	log.info('following packages will be installed: ' + pool)
 
@@ -181,21 +205,29 @@ pub fn (mut p Program) do_install(pkgname string) {
 
 	if value != 'y' {
 		log.info('cancelled.')
-		return
+		return false
 	}
 
 	for dep in p.dependencies {
-		p.packages[dep].install()
+		if ! p.packages[dep].install() {
+			return false
+		}
 	}
+
+	return true
 }
 
-pub fn (mut p Program) do_uninstall(pkgname string) {
-	p.read_package(pkgname)
-	p.packages[pkgname].remove()
+pub fn (mut p Program) do_uninstall(pkgs []string) bool {
+	for pkg in pkgs {
+		p.read_package(pkg)
+		p.packages[pkg].remove()
+	}
+
+	return true
 }
 
-pub fn (mut p Program) emerge(pkgname string) {
-	pool := p.get_depends(pkgname)
+pub fn (mut p Program) emerge(pkgs []string) bool {
+	pool := p.get_depends(pkgs, false)
 
 	log.info('following packages will be installed: ' + pool)
 
@@ -204,31 +236,52 @@ pub fn (mut p Program) emerge(pkgname string) {
 
 	if value != 'y' {
 		log.info('cancelled.')
-		return
+		return false
 	}
 
 	for dep in p.dependencies {
-		p.packages[dep].build()
-		p.packages[dep].install()
+		if p.packages[dep].build() {
+			if ! p.packages[dep].install() {
+				return false
+			}
+		} else {
+			return false
+		}
 	}
+
+	return true
 }
 
-pub fn (mut p Program) do_action(action Action, pkg string) {
+pub fn (mut p Program) do_action(action Action, pkgs []string) {
 	match action {
 		.emerge {
-			p.emerge(pkg)
+			p.emerge(pkgs)
 		}
 
 		.build {
-			p.do_build(pkg)
+			if p.options['deps'] == 'yes' {
+				p.do_build(pkgs)
+			} else {
+				for pkg in pkgs {
+					p.read_package(pkg)
+					p.packages[pkg].build()
+				}
+			}
 		}
 
 		.install {
-			p.do_install(pkg)
+			if p.options['deps'] == 'yes' {
+				p.do_install(pkgs)
+			} else {
+				for pkg in pkgs {
+					p.read_archive(pkg)
+					p.packages[pkg].install()
+				}
+			}
 		}
 
 		.remove {
-			p.do_uninstall(pkg)
+			p.do_uninstall(pkgs)
 		}
 	}
 }

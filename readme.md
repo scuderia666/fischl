@@ -8,3 +8,6 @@ v run xvo-src emerge musl -config %pwd/config
 [ ] option support \
 [ ] section support \
 [ ] patch support
+
+# bugs
+[ ] installing a package from package archive needs package recipe
