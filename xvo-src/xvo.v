@@ -27,16 +27,6 @@ pub fn (mut p Program) start(opts map[string]string) bool {
 	mut options := opts.clone()
 
 	cwd := os.getwd()
-	cc := options['cc']
-
-	os.setenv('CC', cc, true)
-	os.setenv('CXX', options['cxx'], true)
-
-	options['host'] = os.execute('$cc -dumpmachine').output
-	options['target'] = os.execute('$cc -dumpmachine').output
-
-	os.setenv('CFLAGS', options['cflags'], true)
-	os.setenv('CXXFLAGS', options['cxxflags'], true)
 
 	mut placeholders := map[string]string
 	placeholders['pwd'] = cwd

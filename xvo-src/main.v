@@ -56,6 +56,8 @@ fn main() {
 		'cxxflags': ''
 		'ldflags': ''
 		'prefix': ''
+		'host': ''
+		'target': ''
 		'config': '/etc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}
@@ -80,6 +82,20 @@ fn main() {
 		options['jobs'] = (runtime.nr_cpus() + 1).str()
 	} else if options['jobs'].int() < 1 {
 		options['jobs'] = '1'
+	}
+
+	os.setenv('CC', options['cc'], true)
+	os.setenv('CXX', options['cxx'], true)
+	os.setenv('CFLAGS', options['cflags'], true)
+	os.setenv('CXXFLAGS', options['cxxflags'], true)
+	os.setenv('LDFLAGS', options['ldflags'], true)
+
+	if options['host'] == '' {
+		options['host'] = os.execute(options['cc'] + ' -dumpmachine').output
+	}
+
+	if options['target'] == '' {
+		options['target'] = os.execute(options['cc'] + ' -dumpmachine').output
 	}
 
 	p.start(options)
