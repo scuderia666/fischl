@@ -49,6 +49,13 @@ fn main() {
 		'rebuild': 'no'
 		'debug': 'no'
 		'deps': 'yes'
+		'arch': 'x86_64'
+		'cc': 'gcc'
+		'cxx': 'g++'
+		'cflags': ''
+		'cxxflags': ''
+		'ldflags': ''
+		'prefix': ''
 		'config': '/etc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}

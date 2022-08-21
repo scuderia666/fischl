@@ -1,0 +1,4 @@
+[build]
+echo %target
+echo %host
+echo %prefix

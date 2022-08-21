@@ -73,6 +73,11 @@ pub fn read_vars(lines []string) map[string]string {
 
 		mut val := line.all_after_first(var + ' ')
 
+		if val == var {
+			result[var] = ''
+			continue
+		}
+
 		for var2 in result.keys() {
 			val = val.replace('%$var2', result[var2])
 		}

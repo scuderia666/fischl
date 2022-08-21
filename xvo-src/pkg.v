@@ -216,12 +216,16 @@ pub fn (p Package) placeholders(str string) string {
 
 	mut placeholders := p.vars.clone()
 
+	for key, val in p.options {
+		placeholders[key] = val
+	}
+
 	placeholders['stuff'] = p.cfgdata.stuff
 	placeholders['files'] = p.files
 	placeholders['root'] = p.cfgdata.rootdir
 	placeholders['dest'] = p.dest
 	placeholders['make'] = 'make -j' + p.options['jobs']
-	placeholders['prefix'] = ''
+	placeholders['prefix'] = p.options['prefix']
 
 	result = util.apply_placeholders(result, placeholders)
 
