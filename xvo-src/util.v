@@ -57,7 +57,7 @@ pub fn makedir(dir string) bool {
 	return true
 }
 
-pub fn read_vars(lines []string, vars []string) map[string]string {
+pub fn read_vars(lines []string) map[string]string {
 	mut result := map[string]string
 
 	for line in lines {
@@ -65,19 +65,19 @@ pub fn read_vars(lines []string, vars []string) map[string]string {
 		if line[0].ascii_str() == '#' && line[1].ascii_str() != '!' { continue }
 		if line[0].ascii_str() == '[' && line[line.len-1].ascii_str() == ']' { break }
 
-		for var in vars {
-			if line.contains(var + ' ') {
-				mut res := line.all_after_first(var + ' ')
+		var := line.all_before(' ')
 
-				for var2 in vars {
-					if var2 in result.keys() {
-						res = res.replace('%$var2', result[var2])
-					}
-				}
-
-				result[var] = res
-			}
+		if var == '' {
+			continue
 		}
+
+		mut val := line.all_after_first(var + ' ')
+
+		for var2 in result.keys() {
+			val = val.replace('%$var2', result[var2])
+		}
+
+		result[var] = val
 	}
 
 	return result
@@ -118,7 +118,7 @@ pub fn read_sect(lines []string, sect string) []string {
 	return result
 }
 
-pub fn read_config(file string, vars []string, placeholders map[string]string) map[string]string {
+pub fn read_config(file string, placeholders map[string]string) map[string]string {
 	mut lines := os.read_lines(file) or { panic(err) }
 
 	mut result := []string{}
@@ -127,7 +127,7 @@ pub fn read_config(file string, vars []string, placeholders map[string]string) m
 		result << apply_placeholders(line, placeholders)
 	}
 
-	return read_vars(result, vars)
+	return read_vars(result)
 }
 
 pub fn apply_placeholders(str string, vars map[string]string) string {

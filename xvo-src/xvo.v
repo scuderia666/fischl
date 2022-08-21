@@ -3,7 +3,6 @@ module xvo
 import os
 import util
 import log
-import arrays
 import pkg { Package }
 
 pub enum Action {
@@ -33,9 +32,7 @@ pub fn (mut p Program) start(opts map[string]string) bool {
 
 	placeholders['pwd'] = cwd
 
-	vars := arrays.merge(['root', 'src', 'work', 'db'], opts.keys())
-
-	p.cfg = util.read_config(options['config'], vars, placeholders)
+	p.cfg = util.read_config(options['config'], placeholders)
 
 	for opt in options.keys() {
 		if opt in p.cfg.keys() {

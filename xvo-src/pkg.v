@@ -39,10 +39,9 @@ pub fn (mut p Package) read(pkgfile string) {
 
 	mut lines := os.read_lines(pkgfile) or { panic(err) }
 
-	vars := ['ver', 'workdir']
 	sects := ['src', 'deps', 'build']
 
-	p.vars = util.read_vars(lines, vars)
+	p.vars = util.read_vars(lines)
 	p.vars['name'] = p.name
 
 	for sect in sects {
@@ -86,8 +85,7 @@ pub fn (mut p Package) read_archive(archive string) {
 		}
 	}
 
-	vars := ['ver']
-	p.vars = util.read_vars(lines, vars)
+	p.vars = util.read_vars(lines)
 
 	p.db = p.cfgdata.dbdir + '/$p.name'
 
@@ -120,11 +118,11 @@ pub fn (p Package) is_no(val string) bool {
 	return false
 }
 
-pub fn (p Package) sys(cmd string) {
+pub fn (p Package) sys(cmd string) int {
 	if p.options['debug'] != 'yes' {
-		os.system(cmd + ' &>/dev/null')
+		return os.system(cmd + ' &>/dev/null')
 	} else {
-		os.system(cmd)
+		return os.system(cmd)
 	}
 }
 
@@ -240,6 +238,7 @@ pub fn (mut p Package) create_script() {
 	mut f := os.create(script) or { panic(err) }
 
 	f.write_string('#!/bin/sh' + '\n') or { }
+	f.write_string('set -e' + '\n') or { }
 
 	if p.archives.len == 1 {
 		f.write_string('cd ' + p.archives.values()[0] + '\n') or { }
@@ -327,7 +326,11 @@ pub fn (mut p Package) build() bool {
 
 		os.chdir(p.bl) or { }
 		os.system('chmod 777 build.sh')
-		p.sys('sh build.sh')
+		res := p.sys('sh build.sh')
+		if res != 0 {
+			log.err('build failed')
+			return false
+		}
 		p.package()
 		os.chdir(p.bl + '/..') or { }
 	}
