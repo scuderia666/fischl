@@ -62,7 +62,7 @@ build_toolchain() {
 			-debug yes
 	}
 
-	build binutils
+	build test
 }
 
 emerge() {

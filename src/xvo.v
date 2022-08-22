@@ -58,7 +58,7 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	cfg = util.read_vars(lines)
 
 	if cfg['config'] != '' && os.exists(cfg['config']) {
-		mut placeholders := map[string]string
+		mut placeholders := cfg.clone()
 		placeholders['pwd'] = os.getwd()
 		config := util.read_config(cfg['config'], placeholders)
 
