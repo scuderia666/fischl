@@ -6,3 +6,4 @@ echo %test3
 echo %root
 echo %target
 echo %tools
+echo %pwd

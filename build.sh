@@ -7,16 +7,17 @@ if [[ ! -f xvo ]] || [[ -n $@ ]]; then
 		err "please install v"
 	fi
 
+	mkdir -p out
 	v xvo-src/ -o out/xvo
 fi
 
-if [[ ! -f xvo ]]; then
+if [[ ! -f out/xvo ]]; then
 	err "couldnt build xvo"
 fi
 
 build_toolchain() {
 	build() {
-		./xvo build $@ \
+		./out/xvo build $@ \
 			-root %pwd/out/tools \
 			-pkg %pwd/toolchain/pkg \
 			-stuff %pwd/toolchain/stuff \
@@ -24,7 +25,6 @@ build_toolchain() {
 			-bl %pwd/out/tc_build \
 			-scripts %pwd/scripts \
 			-target %arch-linux-musl \
-			-tools %pwd/tools \
 			-debug yes
 	}
 
@@ -32,15 +32,15 @@ build_toolchain() {
 }
 
 emerge() {
-	./xvo emerge $@ \
+	./out/xvo emerge $@ \
 		-root %pwd/out/rootfs \
+		-tools %pwd/out/tools \
 		-pkg %pwd/pkg \
 		-stuff %pwd/stuff \
 		-dl %pwd/out/dl \
 		-bl %pwd/out/build \
 		-scripts %pwd/scripts \
 		-target %arch-linux-musl \
-		-tools %pwd/tools \
 		-debug yes
 }
 
