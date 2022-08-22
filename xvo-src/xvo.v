@@ -47,25 +47,26 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		'jobs': runtime.nr_cpus().str()
 	}
 
+	mut result := cfg.clone()
 	mut lines := []string{}
-
-	for var, val in cfg {
-		lines << var + ' ' + val.replace('%pwd', os.getwd())
-	}
-
-	cfg = util.read_vars(lines)
 
 	if args.len > 0 {
 		for var, val in cfg {
 			if var in args.keys() {
 				if args[var] != '' {
-					cfg[var] = args[var].replace('%pwd', os.getwd())
+					result[var] = args[var].replace('%pwd', os.getwd())
 				} else if val == 'no' {
-					cfg[var] = 'yes'
+					result[var] = 'yes'
 				}
 			}
 		}
 	}
+
+	for var, val in result {
+		lines << var + ' ' + val.replace('%pwd', os.getwd())
+	}
+
+	cfg = util.read_vars(lines)
 
 	if cfg['config'] != '' && os.exists(cfg['config']) {
 		mut placeholders := map[string]string
@@ -179,6 +180,8 @@ pub fn (mut p Program) add_package(name string) {
 
 	mut pkg := Package{name: name, cfg: p.cfg, cfgdata: p.cfgdata}
 
+	pkg.on_add()
+
 	p.packages[name] = pkg
 }
 
@@ -272,7 +275,7 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 
 pub fn (mut p Program) do_uninstall(pkgs []string) bool {
 	for pkg in pkgs {
-		p.read_archive(pkg)
+		p.add_package(pkg)
 		p.packages[pkg].remove()
 	}
 

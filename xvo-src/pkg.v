@@ -28,6 +28,10 @@ pub mut:
 	archives map[string]string
 }
 
+pub fn (mut p Package) on_add() {
+	p.db = p.cfgdata.dbdir + '/$p.name'
+}
+
 pub fn (mut p Package) read(pkgfile string) bool {
 	if p.is_read {
 		return true
@@ -55,7 +59,6 @@ pub fn (mut p Package) read(pkgfile string) bool {
 
 	p.dl = p.cfgdata.dldir + '/$p.name'
 	p.bl = p.cfgdata.bldir + '/$p.name'
-	p.db = p.cfgdata.dbdir + '/$p.name'
 	p.dest = p.bl + '/out'
 	p.files = p.cfgdata.stuff + '/$p.name'
 
@@ -93,8 +96,6 @@ pub fn (mut p Package) read_archive(archive string) bool {
 	}
 
 	p.vars = util.read_vars(lines)
-
-	p.db = p.cfgdata.dbdir + '/$p.name'
 
 	p.is_read = true
 
