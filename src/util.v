@@ -35,18 +35,18 @@ pub fn (u Util) strip_extension(filename string) string {
 	return ''
 }
 
-pub fn create_pool(array []string) string {
-	mut pool := ''
+pub fn create_list(array []string) string {
+	mut list := ''
 
 	for val in array {
-		pool = pool + '$val, '
+		list = list + '$val, '
 	}
 
-	if pool.len == 0 {
+	if list.len == 0 {
 		return ''
 	}
 
-	return pool.substr(0, pool.len-2)
+	return list.substr(0, list.len-2)
 }
 
 pub fn makedir(dir string) bool {

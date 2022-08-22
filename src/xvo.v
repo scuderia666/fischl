@@ -214,17 +214,17 @@ pub fn (mut p Program) get_depends(pkgs []string, install bool) string {
 		}
 	}
 
-	return util.create_pool(p.dependencies)
+	return util.create_list(p.dependencies)
 }
 
 pub fn (mut p Program) do_build(pkgs []string) bool {
-	pool := p.get_depends(pkgs, false)
+	list := p.get_depends(pkgs, false)
 
-	if pool == '' {
+	if list == '' {
 		return false
 	}
 
-	log.info('following packages will be built: ' + pool)
+	log.info('following packages will be built: ' + list)
 
 	log.info_print('do you want to continue? (y/n) ')
 	value := os.input('')
@@ -244,13 +244,13 @@ pub fn (mut p Program) do_build(pkgs []string) bool {
 }
 
 pub fn (mut p Program) do_install(pkgs []string) bool {
-	pool := p.get_depends(pkgs, true)
+	list := p.get_depends(pkgs, true)
 
-	if pool == '' {
+	if list == '' {
 		return false
 	}
 
-	log.info('following packages will be installed: ' + pool)
+	log.info('following packages will be installed: ' + list)
 
 	log.info_print('do you want to continue? (y/n) ')
 	value := os.input('')
@@ -270,7 +270,7 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 }
 
 pub fn (mut p Program) do_uninstall(pkgs []string) bool {
-	log.info('following packages will be removed: ' + util.create_pool(pkgs))
+	log.info('following packages will be removed: ' + util.create_list(pkgs))
 
 	log.info_print('do you want to continue? (y/n) ')
 	value := os.input('')
@@ -289,13 +289,13 @@ pub fn (mut p Program) do_uninstall(pkgs []string) bool {
 }
 
 pub fn (mut p Program) emerge(pkgs []string) bool {
-	pool := p.get_depends(pkgs, false)
+	list:= p.get_depends(pkgs, false)
 
-	if pool == '' {
+	if list == '' {
 		return false
 	}
 
-	log.info('following packages will be installed: ' + pool)
+	log.info('following packages will be installed: ' + list)
 
 	log.info_print('do you want to continue? (y/n) ')
 	value := os.input('')

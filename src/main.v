@@ -7,13 +7,12 @@ const (
 )
 
 fn usage() {
-	println("xvo build|install <pkg>")
+	println("xvo emerge|build|install <pkg>")
 	exit(1)
 }
 
 fn main() {
 	mut args := util.new(os.args, 1)
-	args.alias('W', 'with')
 	args.parse()
 
 	if args.command.len == 0 {
