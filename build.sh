@@ -15,7 +15,7 @@ if [[ ! -f xvo ]]; then
 fi
 
 emerge() {
-	./xvo emerge $@ -root %pwd/rootfs -src %pwd/src -work %pwd/work
+	./xvo emerge $@ -root %pwd/rootfs -src %pwd/src -work %pwd/work -debug yes
 }
 
 if [[ -n $@ ]]; then

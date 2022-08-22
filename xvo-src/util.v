@@ -83,6 +83,7 @@ pub fn read_vars(lines []string) map[string]string {
 			if c == x {
 				continue
 			}
+
 			data[x] = y.replace("%"+c, data[c])
 		}
 	}
