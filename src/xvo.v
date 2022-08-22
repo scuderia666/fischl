@@ -224,14 +224,16 @@ pub fn (mut p Program) do_build(pkgs []string) bool {
 		return false
 	}
 
-	log.info('following packages will be built: ' + list)
+	if p.cfg['noprompt'] != 'yes' {
+		log.info('following packages will be built: ' + list)
 
-	log.info_print('do you want to continue? (y/n) ')
-	value := os.input('')
+		log.info_print('do you want to continue? (y/n) ')
+		value := os.input('')
 
-	if value != 'y' {
-		log.info('cancelled.')
-		return false
+		if value != 'y' {
+			log.info('cancelled.')
+			return false
+		}
 	}
 
 	for dep in p.dependencies {
@@ -250,14 +252,16 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 		return false
 	}
 
-	log.info('following packages will be installed: ' + list)
+	if p.cfg['noprompt'] != 'yes' {
+		log.info('following packages will be installed: ' + list)
 
-	log.info_print('do you want to continue? (y/n) ')
-	value := os.input('')
+		log.info_print('do you want to continue? (y/n) ')
+		value := os.input('')
 
-	if value != 'y' {
-		log.info('cancelled.')
-		return false
+		if value != 'y' {
+			log.info('cancelled.')
+			return false
+		}
 	}
 
 	for dep in p.dependencies {
@@ -270,14 +274,16 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 }
 
 pub fn (mut p Program) do_uninstall(pkgs []string) bool {
-	log.info('following packages will be removed: ' + util.create_list(pkgs))
+	if p.cfg['noprompt'] != 'yes' {
+		log.info('following packages will be removed: ' + util.create_list(pkgs))
 
-	log.info_print('do you want to continue? (y/n) ')
-	value := os.input('')
+		log.info_print('do you want to continue? (y/n) ')
+		value := os.input('')
 
-	if value != 'y' {
-		log.info('cancelled.')
-		return false
+		if value != 'y' {
+			log.info('cancelled.')
+			return false
+		}
 	}
 
 	for pkg in pkgs {
@@ -295,14 +301,16 @@ pub fn (mut p Program) emerge(pkgs []string) bool {
 		return false
 	}
 
-	log.info('following packages will be installed: ' + list)
+	if p.cfg['noprompt'] != 'yes' {
+		log.info('following packages will be installed: ' + list)
 
-	log.info_print('do you want to continue? (y/n) ')
-	value := os.input('')
+		log.info_print('do you want to continue? (y/n) ')
+		value := os.input('')
 
-	if value != 'y' {
-		log.info('cancelled.')
-		return false
+		if value != 'y' {
+			log.info('cancelled.')
+			return false
+		}
 	}
 
 	for dep in p.dependencies {

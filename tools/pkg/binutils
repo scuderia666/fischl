@@ -1,0 +1,20 @@
+ver 2.37
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
+
+[build]
+mkdir build && cd build
+
+../configure \
+	--prefix=%tools \
+	--target=%target \
+	--with-sysroot=%tools/%target \
+	--disable-nls \
+	--disable-multilib \
+	--disable-werror \
+	--enable-deterministic-archives \
+	--disable-compressed-debug-sections
+
+%make configure-host
+%make && make install

@@ -147,8 +147,8 @@ pub fn (mut p Package) get_sources() bool {
 		mut filename := os.base(src)
 
 		if src.contains(':') {
-			source = src.all_before(':')
-			filename = src.all_after(':')
+			filename = os.base(src).all_after(':')
+			source = src.all_before(':' + filename)
 		}
 
 		if p.util.is_archive(filename) || source.contains('git') {

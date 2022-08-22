@@ -1,0 +1,20 @@
+ver 1.2.2
+
+[src]
+https://musl.libc.org/releases/%name-%ver.tar.gz
+
+[build]
+./configure \
+	CROSS_COMPILE=%target- \
+	--prefix=/ \
+	--target=%target
+
+%make && DESTDIR=%tools make install
+mkdir -p %tools/usr
+ln -s ../include %tools/usr/include
+rm -f %tools/lib/ld-musl*
+ln -s libc.so %tools/lib/ld-musl-%arch.so.1
+ln -s ../lib/libc.so %tools/bin/ldd
+mkdir -p %tools/etc
+printf "%tools/lib \n" >> %tools/etc/ld-musl-$LARCH.path
+printf "%toolchain/lib \n" >> %tools/etc/ld-musl-$LARCH.path

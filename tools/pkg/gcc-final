@@ -1,0 +1,49 @@
+ver 11.2.0
+gmp_ver 6.2.1
+mpc_ver 1.2.1
+mpfr_ver 4.1.0
+
+workdir gcc-%ver
+force-patch yes
+
+[src]
+https://ftp.gnu.org/gnu/gcc/gcc-%ver/gcc-%ver.tar.xz
+https://ftp.gnu.org/gnu/gmp/gmp-%gmp_ver.tar.xz
+https://ftp.gnu.org/gnu/mpc/mpc-%mpc_ver.tar.gz
+https://www.mpfr.org/mpfr-%mpfr_ver/mpfr-%mpfr_ver.tar.xz
+
+[build]
+mv ../gmp* gmp
+mv ../mpc* mpc
+mv ../mpfr* mpfr
+
+sed -e '/m64=/s/lib64/lib/' \
+              -i.orig gcc/config/i386/t-linux64
+
+mkdir build && cd build
+
+AR=ar LDFLAGS="-Wl,-rpath,%tools/lib" \
+../configure \
+    --prefix=%tools \
+    --build=%host \
+    --host=%host \
+    --target=%target \
+    --disable-multilib \
+    --with-sysroot=%tools \
+    --disable-nls \
+    --enable-shared \
+    --enable-languages=c,c++ \
+    --enable-threads=posix \
+    --enable-clocale=generic \
+    --enable-libstdcxx-time \
+    --enable-fully-dynamic-string \
+    --disable-symvers \
+    --disable-libsanitizer \
+    --disable-lto-plugin \
+    --disable-libssp \
+    --with-arch=%arch \
+	--with-tune=generic
+
+%make AS_FOR_TARGET="%target-as" \
+    LD_FOR_TARGET="%target-ld"
+make install
