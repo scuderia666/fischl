@@ -2,13 +2,13 @@
 
 err() { echo $@; exit 1; }
 
-if [[ ! -f xvo ]] || [[ -n $@ ]]; then
+if [[ ! -f out/xvo ]] || [[ -n $@ ]]; then
 	if ! command -v v &> /dev/null; then
 		err "please install v"
 	fi
 
 	mkdir -p out
-	v xvo-src/ -o out/xvo
+	v src -o out/xvo
 fi
 
 if [[ ! -f out/xvo ]]; then

@@ -1,9 +1,0 @@
-root %pwd/rootfs
-src %pwd/src
-work %pwd/work
-db %work/db
-
-debug yes
-jobs 3
-arch x86_64
-target %arch-linux-musl
