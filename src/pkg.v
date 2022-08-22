@@ -49,6 +49,10 @@ pub fn (mut p Package) read(pkgfile string) bool {
 	p.vars = util.read_vars(lines)
 	p.vars['name'] = p.name
 
+	for var, val in p.vars {
+		p.vars[var] = val.replace('%name', p.name)
+	}
+
 	for sect in sects {
 		for line in util.read_sect(lines, sect) {
 			p.data[sect] << util.apply_placeholders(line, p.vars)
