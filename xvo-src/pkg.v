@@ -8,7 +8,6 @@ pub struct Package {
 pub mut:
 	name string [required]
 	cfg map[string]string [required]
-	cfgdata util.Data [required]
 	data map[string][]string
 	vars map[string]string
 
@@ -29,7 +28,7 @@ pub mut:
 }
 
 pub fn (mut p Package) on_add() {
-	p.db = p.cfgdata.dbdir + '/$p.name'
+	p.db = p.cfg['db'] + '/$p.name'
 }
 
 pub fn (mut p Package) read(pkgfile string) bool {
@@ -57,10 +56,10 @@ pub fn (mut p Package) read(pkgfile string) bool {
 
 	p.fullname = p.name + '-' + p.vars['ver']
 
-	p.dl = p.cfgdata.dldir + '/$p.name'
-	p.bl = p.cfgdata.bldir + '/$p.name'
+	p.dl = p.cfg['dl'] + '/$p.name'
+	p.bl = p.cfg['bl'] + '/$p.name'
 	p.dest = p.bl + '/out'
-	p.files = p.cfgdata.stuff + '/$p.name'
+	p.files = p.cfg['stuff'] + '/$p.name'
 
 	p.util.init()
 
@@ -78,14 +77,14 @@ pub fn (mut p Package) read_archive(archive string) bool {
 		return false
 	}
 
-	os.mkdir(p.cfgdata.rootdir) or { }
-	os.chdir(p.cfgdata.rootdir) or { }
-	p.sys('bash ' + p.cfgdata.stuff + '/read_file.sh ' + archive + ' ./pkginfo')
-	os.chdir(p.cfgdata.srcdir) or { }
+	os.mkdir_all(p.cfg['root']) or { }
+	os.chdir(p.cfg['root']) or { }
+	p.sys('bash ' + p.cfg['scripts'] + '/read_file.sh ' + archive + ' ./pkginfo')
+	os.chdir(p.cfg['maindir']) or { }
 
-	mut lines := os.read_lines(p.cfgdata.rootdir + '/pkginfo') or { panic(err) }
+	mut lines := os.read_lines(p.cfg['root'] + '/pkginfo') or { panic(err) }
 
-	os.rm(p.cfgdata.rootdir + '/pkginfo') or { }
+	os.rm(p.cfg['root'] + '/pkginfo') or { }
 
 	sects := ['deps']
 
@@ -164,7 +163,7 @@ pub fn (mut p Package) get_sources() bool {
 			if ! os.exists(p.bl + '/' + filename) {
 				log.info('cloning $filename [$i/$p.sources.len]')
 
-				p.sys('bash ' + p.cfgdata.stuff + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
+				p.sys('bash ' + p.cfg['scripts'] + '/clone.sh ' + src + ' ' + p.bl + '/' + filename)
 
 				if ! os.exists(p.bl + '/' + filename) {
 					log.err('couldnt clone $filename')
@@ -177,7 +176,7 @@ pub fn (mut p Package) get_sources() bool {
 			if ! os.exists(p.dl + '/' + filename) {
 				log.info('downloading $filename [$i/$p.sources.len]')
 
-				p.sys('bash ' + p.cfgdata.stuff + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
+				p.sys('bash ' + p.cfg['scripts'] + '/download.sh ' + src + ' ' + p.dl + '/' + filename)
 
 				if ! os.exists(p.dl + '/' + filename) {
 					log.err('couldnt download $filename')
@@ -207,7 +206,7 @@ pub fn (mut p Package) extract_sources() bool {
 		if ! src.contains('git') {
 			log.info('extracting source: $src [$i/$p.archives.len]')
 
-			p.sys('bash ' + p.cfgdata.stuff + '/extract.sh ' + p.dl + '/' + src + ' ' + p.bl + '/' + filename)
+			p.sys('bash ' + p.cfg['scripts'] + '/extract.sh ' + p.dl + '/' + src + ' ' + p.bl + '/' + filename)
 
 			if ! os.exists(p.bl + '/' + filename) {
 				log.err('couldnt extract $filename')
@@ -230,9 +229,9 @@ pub fn (p Package) placeholders(str string) string {
 		placeholders[key] = val
 	}
 
-	placeholders['stuff'] = p.cfgdata.stuff
+	placeholders['stuff'] = p.cfg['stuff']
 	placeholders['files'] = p.files
-	placeholders['root'] = p.cfgdata.rootdir
+	placeholders['root'] = p.cfg['root']
 	placeholders['dest'] = p.dest
 	placeholders['make'] = 'make -j' + p.cfg['jobs']
 
@@ -290,14 +289,14 @@ pub fn (mut p Package) package() {
 			os.rm(p.get_archive()) or { }
 		}
 
-		p.sys('bash ' + p.cfgdata.stuff + '/compress.sh ' + p.get_archive())
+		p.sys('bash ' + p.cfg['scripts'] + '/compress.sh ' + p.get_archive())
 
 		log.info('$p.name built successfully')
 	}
 }
 
 pub fn (mut p Package) get_archive() string {
-	return p.cfgdata.built + '/' + p.name + '.pkg'
+	return p.cfg['out'] + '/' + p.name + '.pkg'
 }
 
 pub fn (mut p Package) build() bool {
@@ -312,7 +311,7 @@ pub fn (mut p Package) build() bool {
 		println('building $p.name')
 	}
 
-	os.mkdir(p.bl) or { }
+	os.mkdir_all(p.bl) or { }
 
 	if ! p.get_sources() {
 		log.err('couldnt get sources')
@@ -362,12 +361,12 @@ pub fn (mut p Package) install() bool {
 		return false
 	}
 
-	os.mkdir(p.cfgdata.rootdir) or { }
-	os.mkdir(p.cfgdata.dbdir) or { }
-	os.system('bash ' + p.cfgdata.stuff + '/install.sh ' + p.cfgdata.rootdir + ' ' + p.get_archive() + ' &>/dev/null')
-	os.mkdir(p.db) or { }
-	os.mv(p.cfgdata.rootdir + '/pkginfo', p.db) or { }
-	p.sys('bash ' + p.cfgdata.stuff + '/create_filelist.sh ' + p.get_archive() + ' ' + p.db + '/files')
+	os.mkdir_all(p.cfg['root']) or { }
+	os.mkdir_all(p.cfg['db']) or { }
+	os.system('bash ' + p.cfg['scripts'] + '/install.sh ' + p.cfg['root'] + ' ' + p.get_archive() + ' &>/dev/null')
+	os.mkdir_all(p.db) or { }
+	os.mv(p.cfg['root'] + '/pkginfo', p.db) or { }
+	p.sys('bash ' + p.cfg['scripts'] + '/create_filelist.sh ' + p.get_archive() + ' ' + p.db + '/files')
 
 	log.info('$p.name is installed successfully')
 
@@ -380,7 +379,7 @@ pub fn (p Package) remove() bool {
 		return false
 	}
 
-	p.sys('bash ' + p.cfgdata.stuff + '/list_uninstall.sh ' + p.db + '/files ' + p.cfgdata.rootdir)
+	p.sys('bash ' + p.cfg['scripts'] + '/list_uninstall.sh ' + p.db + '/files ' + p.cfg['root'])
 	os.rmdir_all(p.db) or { }
 
 	log.info('$p.name is removed successfully')

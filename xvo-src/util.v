@@ -2,18 +2,6 @@ module util
 
 import os
 
-pub struct Data {
-pub mut:
-	rootdir string
-	srcdir string
-	dbdir string
-	pkgdir string
-	stuff string
-	dldir string
-	bldir string
-	built string
-}
-
 pub struct Util {
 pub mut:
 	archive_exts []string

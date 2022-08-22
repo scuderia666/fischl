@@ -17,7 +17,6 @@ pub struct Program {
 pub mut:
 	packages map[string]Package
 	cfg map[string]string
-	cfgdata util.Data
 
 	dependencies []string
 	marked []string
@@ -38,11 +37,13 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		'host': ''
 		'target': ''
 		'root': ''
-		'src': '%root/src'
-		'work': '%src/work'
-		'db': '%src/db'
-		'pkgdir': '%src/pkg'
-		'stuff': '%src/stuff'
+		'db': '%root/src/db'
+		'pkg': '%root/src/pkg'
+		'stuff': '%root/src/stuff'
+		'out': '%root/src/out'
+		'bl': '%root/src/build'
+		'dl': '%root/src/dl'
+		'scripts': '%root/src/scripts'
 		'config': '/etc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}
@@ -96,24 +97,9 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	os.setenv('CXXFLAGS', cfg['cxxflags'], true)
 	os.setenv('LDFLAGS', cfg['ldflags'], true)
 
-	p.cfgdata.rootdir = cfg['root']
-	p.cfgdata.srcdir = cfg['src']
-	p.cfgdata.dbdir = cfg['db']
-	p.cfgdata.pkgdir = cfg['src'] + '/pkg'
-	p.cfgdata.stuff = cfg['src'] + '/stuff'
-	p.cfgdata.dldir = cfg['work'] + '/dl'
-	p.cfgdata.bldir = cfg['work'] + '/build'
-	p.cfgdata.built = cfg['work'] + '/built'
+	os.mkdir_all(cfg['root']) or { }
 
-	os.mkdir(cfg['root']) or { }
-	os.mkdir(cfg['src']) or { }
-	os.mkdir(cfg['work']) or { }
-	os.mkdir(p.cfgdata.dldir) or { }
-	os.mkdir(p.cfgdata.bldir) or { }
-	os.mkdir(p.cfgdata.built) or { }
-
-	os.chdir(p.cfgdata.srcdir) or { }
-
+	cfg['maindir'] = os.getwd()
 	p.cfg = cfg.clone()
 
 	return true
@@ -174,7 +160,7 @@ pub fn (mut p Program) add_package(name string) {
 		return
 	}
 
-	mut pkg := Package{name: name, cfg: p.cfg, cfgdata: p.cfgdata}
+	mut pkg := Package{name: name, cfg: p.cfg}
 
 	pkg.on_add()
 
@@ -186,7 +172,7 @@ pub fn (mut p Program) read_package(name string) bool {
 		return false
 	}
 
-	return p.packages[name].read(p.cfgdata.pkgdir + '/$name')
+	return p.packages[name].read(p.cfg['pkg'] + '/$name')
 }
 
 pub fn (mut p Program) read_archive(name string) bool {
