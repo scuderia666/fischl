@@ -1,8 +1,8 @@
 #!/bin/sh
 
-err() { echo $@; exit 1 }
+err() { echo $@; exit 1; }
 
-if [[ ! -f xvo ]]; then
+if [[ ! -f xvo ]] || [[ -n $@ ]]; then
 	if ! command -v v &> /dev/null; then
 		err "please install v"
 	fi
@@ -15,7 +15,11 @@ if [[ ! -f xvo ]]; then
 fi
 
 emerge() {
-	./xvo emerge $@ -root %pwd/rootfs -src
+	./xvo emerge $@ -root %pwd/rootfs -src %pwd/src -work %pwd/work
 }
 
-emerge musl busybox
+if [[ -n $@ ]]; then
+	emerge $@
+else
+	emerge musl busybox
+fi
