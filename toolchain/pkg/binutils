@@ -1,0 +1,16 @@
+ver 2.38
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
+
+[build]
+mkdir build && cd build
+
+../configure \
+	--prefix=%tools \
+	--with-sysroot=%rootfs \
+	--target=%target \
+	--disable-nls \
+	--disable-werror
+
+%make && make install

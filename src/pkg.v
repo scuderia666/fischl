@@ -153,7 +153,7 @@ pub fn (mut p Package) get_sources() bool {
 	}
 
 	if p.sources.len != 0 {
-		os.mkdir(p.dl) or { }
+		os.mkdir_all(p.dl) or { }
 	}
 
 	mut i := 1
@@ -201,7 +201,7 @@ pub fn (mut p Package) extract_sources() bool {
 			os.rmdir_all(p.bl + '/' + filename) or { }
 		}
 
-		os.mkdir(p.bl + '/' + filename) or { }
+		os.mkdir_all(p.bl + '/' + filename) or { }
 
 		if ! src.contains('git') {
 			log.info('extracting source: $src [$i/$p.archives.len]')
@@ -331,10 +331,8 @@ pub fn (mut p Package) build() bool {
 		}
 
 		if p.archives.len == 1 {
-			os.mkdir(p.dest) or { }
+			os.mkdir_all(p.dest) or { }
 		}
-
-		println('building')
 
 		os.chdir(p.bl) or { }
 		os.system('chmod 777 build.sh')
@@ -343,7 +341,9 @@ pub fn (mut p Package) build() bool {
 			log.err('build failed')
 			return false
 		}
-		p.package()
+		if p.cfg['nopackage'] != 'yes' {
+			p.package()
+		}
 		os.chdir(p.bl + '/..') or { }
 	}
 

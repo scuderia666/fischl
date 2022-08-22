@@ -26,6 +26,7 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	mut cfg := {
 		'rebuild': 'no'
 		'debug': 'no'
+		'nopackage': 'no'
 		'deps': 'yes'
 		'arch': 'x86_64'
 		'cc': 'gcc'
@@ -36,7 +37,6 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		'prefix': ''
 		'host': ''
 		'target': ''
-		'root': ''
 		'db': '%root/src/db'
 		'pkg': '%root/src/pkg'
 		'stuff': '%root/src/stuff'
@@ -55,8 +55,6 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		for var in args.keys() {
 			if args[var] != '' {
 				result[var] = args[var].replace('%pwd', os.getwd())
-			} else if var in cfg.keys() && cfg[var] == 'no' {
-				result[var] = 'yes'
 			}
 		}
 	}
