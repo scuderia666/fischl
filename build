@@ -18,7 +18,7 @@ if [[ ! -f out/xvo ]]; then
 fi
 
 build_tools() {
-	export PATH=$PWD/out/tools:$PATH
+	export PATH=$PWD/out/tools/bin:$PATH
 
 	build() {
 		./out/xvo build $@ \
@@ -44,7 +44,7 @@ build_tools() {
 }
 
 build_toolchain() {
-	export PATH=$PWD/out/tools:$PATH
+	export PATH=$PWD/out/tools/bin:$PATH
 
 	build() {
 		./out/xvo build $@ \

@@ -43,7 +43,7 @@ CXXFLAGS='-g0 -O0' \
 	--disable-decimal-float \
 	--enable-clocale=generic \
 	--enable-languages=c \
-	--with-arch=%arch \
+	--with-arch=x86-64 \
 	--with-tune=generic
 
 %make all-gcc all-target-libgcc

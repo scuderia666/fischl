@@ -41,7 +41,7 @@ AR=ar LDFLAGS="-Wl,-rpath,%tools/lib" \
     --disable-libsanitizer \
     --disable-lto-plugin \
     --disable-libssp \
-    --with-arch=%arch \
+    --with-arch=x86-64 \
 	--with-tune=generic
 
 %make AS_FOR_TARGET="%target-as" \
