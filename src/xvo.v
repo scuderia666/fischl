@@ -165,12 +165,34 @@ pub fn (mut p Program) add_package(name string) {
 	p.packages[name] = pkg
 }
 
+pub fn (mut p Program) get_recipe(name string) string {
+	files := os.ls(p.cfg['pkg']) or { []string{} }
+
+	for filename in files {
+		dir := p.cfg['pkg'] + '/$filename'
+
+		if os.is_dir(dir) {
+			pkgs := os.ls(dir) or { []string{} }
+
+			for pkg in pkgs {
+				if pkg == name {
+					return dir + '/$pkg'
+				}
+			}
+		} else {
+			return dir
+		}
+	}
+
+	return ''
+}
+
 pub fn (mut p Program) read_package(name string) bool {
 	if !(name in p.packages) {
 		return false
 	}
 
-	return p.packages[name].read(p.cfg['pkg'] + '/$name')
+	return p.packages[name].read(p.get_recipe(name))
 }
 
 pub fn (mut p Program) read_archive(name string) bool {
