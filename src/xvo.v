@@ -74,11 +74,11 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	}
 
 	if cfg['host'] == '' {
-		cfg['host'] = os.execute(cfg['cc'] + ' -dumpmachine').output
+		cfg['host'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
 	}
 
 	if cfg['target'] == '' {
-		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output
+		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
 	}
 
 	os.setenv('CC', cfg['cc'], true)
