@@ -44,7 +44,7 @@ pub fn (mut p Package) read(pkgfile string) bool {
 
 	mut lines := os.read_lines(pkgfile) or { panic(err) }
 
-	sects := ['src', 'deps', 'build']
+	sects := ['options', 'src', 'deps', 'build']
 
 	p.vars = util.read_vars(lines)
 	p.vars['name'] = p.name

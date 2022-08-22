@@ -8,7 +8,7 @@ mkdir build && cd build
 
 ../configure \
 	--prefix=%tools \
-	--with-sysroot=%rootfs \
+	--with-sysroot=%root \
 	--target=%target \
 	--disable-nls \
 	--disable-werror

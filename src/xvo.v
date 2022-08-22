@@ -24,19 +24,10 @@ pub mut:
 
 pub fn (mut p Program) start(args map[string]string) bool {
 	mut cfg := {
-		'rebuild': 'no'
-		'debug': 'no'
-		'nopackage': 'no'
-		'deps': 'yes'
 		'arch': 'x86_64'
 		'cc': 'gcc'
 		'cxx': 'g++'
-		'cflags': ''
-		'cxxflags': ''
-		'ldflags': ''
-		'prefix': ''
-		'host': ''
-		'target': ''
+		'prefix': '/usr'
 		'db': '%root/src/db'
 		'pkg': '%root/src/pkg'
 		'stuff': '%root/src/stuff'
@@ -120,6 +111,18 @@ pub fn (mut p Program) dependency(pkgname string, install bool) bool {
 
 	deps := p.packages[pkgname].get_deps()
 
+	if p.packages[pkgname].data.len == 1 && p.packages[pkgname].data.keys()[0] == 'options' {
+		mut choose := p.packages[pkgname].data['options'][0]
+
+		if pkgname in p.cfg.keys() {
+			if p.cfg[pkgname] in p.packages[pkgname].data['options'] {
+				choose = p.cfg[pkgname]
+			}
+		}
+
+		return p.dependency(choose, install)
+	}
+
 	for dep in deps {
 		if !(dep in p.marked) {
 			p. marked << dep
@@ -180,7 +183,7 @@ pub fn (mut p Program) get_recipe(name string) string {
 				}
 			}
 		} else {
-			return dir
+			return p.cfg['pkg'] + '/$name'
 		}
 	}
 
@@ -321,7 +324,7 @@ pub fn (mut p Program) do_action(action Action, pkgs []string) {
 		}
 
 		.build {
-			if p.cfg['deps'] == 'yes' {
+			if p.cfg['nodeps'] != 'yes' {
 				p.do_build(pkgs)
 			} else {
 				for pkg in pkgs {
