@@ -1,4 +1,6 @@
+test3 %test5
+test5 hi
+
 [build]
-echo %target
-echo %host
-echo %prefix
+echo %test3
+echo %root

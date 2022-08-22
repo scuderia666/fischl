@@ -58,34 +58,36 @@ pub fn makedir(dir string) bool {
 }
 
 pub fn read_vars(lines []string) map[string]string {
-	mut result := map[string]string
+	mut vars := []string{}
+	mut data := map[string]string
 
 	for line in lines {
 		if line.len == 0 { continue }
 		if line[0].ascii_str() == '#' && line[1].ascii_str() != '!' { continue }
 		if line[0].ascii_str() == '[' && line[line.len-1].ascii_str() == ']' { break }
 
-		var := line.all_before(' ')
+		sep := line.split(" ")
+        data[sep[0]] = sep[1..].join(" ")
+        if sep[0] in vars {
+            println("error same variable can't be declared more than once!")
+            continue
+        }
 
-		if var == '' {
-			continue
-		}
-
-		mut val := line.all_after_first(var + ' ')
-
-		if val == var {
-			result[var] = ''
-			continue
-		}
-
-		for var2 in result.keys() {
-			val = val.replace('%$var2', result[var2])
-		}
-
-		result[var] = val
+        vars << sep[0]
 	}
 
-	return result
+	vars.sort(a > b)
+
+	for c in vars {
+		for x, y in data {
+			if c == x {
+				continue
+			}
+			data[x] = y.replace("%"+c, data[c])
+		}
+	}
+
+	return data
 }
 
 pub fn read_file(file string) []string {

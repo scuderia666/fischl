@@ -3,6 +3,7 @@ module xvo
 import os
 import util
 import log
+import runtime
 import pkg { Package }
 
 pub enum Action {
@@ -23,64 +24,119 @@ pub mut:
 	marked []string
 }
 
-pub fn (mut p Program) start(opts map[string]string) bool {
-	mut options := opts.clone()
+pub fn (mut p Program) start(args map[string]string) bool {
+	mut options := {
+		'rebuild': 'no'
+		'debug': 'no'
+		'deps': 'yes'
+		'arch': 'x86_64'
+		'cc': 'gcc'
+		'cxx': 'g++'
+		'cflags': ''
+		'cxxflags': ''
+		'ldflags': ''
+		'prefix': ''
+		'host': ''
+		'target': ''
+		'root': ''
+		'src': '%root/src'
+		'work': '%src/work'
+		'db': '%src/db'
+		'pkgdir': '%src/pkg'
+		'stuff': '%src/stuff'
+		'config': '/etc/xvo.conf'
+		'jobs': runtime.nr_cpus().str()
+	}
 
-	cwd := os.getwd()
+	mut lines := []string{}
 
-	mut placeholders := map[string]string
-	placeholders['pwd'] = cwd
-	p.cfg = util.read_config(options['config'], placeholders)
+	for var, val in options {
+		lines << var + ' ' + val.replace('%pwd', os.getwd())
+	}
 
-	for opt in options.keys() {
-		if opt in p.cfg.keys() {
-			if p.cfg[opt] == 'yes' {
-				options[opt] = 'yes'
-			} else {
-				options[opt] = p.cfg[opt]
+	options = util.read_vars(lines)
+
+	if args.len > 0 {
+		for var, val in options {
+			if var in args.keys() {
+				if args[var] != '' {
+					options[var] = args[var].replace('%pwd', os.getwd())
+				} else if val == 'no' {
+					options[var] = 'yes'
+				}
 			}
 		}
 	}
 
-	p.options = options.clone()
-
-	if !('root' in p.cfg) {
-		log.err('define root variable in config')
-		return false
+	if ! os.exists(options['config']) {
+		exit(1)
 	}
 
-	if ! os.exists(p.cfg['root']) {
-		os.mkdir(p.cfg['work']) or { }
+	if options['jobs'].int() > runtime.nr_cpus() + 1 {
+		options['jobs'] = (runtime.nr_cpus() + 1).str()
+	} else if options['jobs'].int() < 1 {
+		options['jobs'] = '1'
 	}
 
-	if !('src' in p.cfg) {
-		p.cfg['src'] = p.cfg['root'] + '/src'
+	os.setenv('CC', options['cc'], true)
+	os.setenv('CXX', options['cxx'], true)
+	os.setenv('CFLAGS', options['cflags'], true)
+	os.setenv('CXXFLAGS', options['cxxflags'], true)
+	os.setenv('LDFLAGS', options['ldflags'], true)
+
+	if options['host'] == '' {
+		options['host'] = os.execute(options['cc'] + ' -dumpmachine').output
 	}
 
-	if !('work' in p.cfg) {
-		p.cfg['work'] = p.cfg['src']
+	if options['target'] == '' {
+		options['target'] = os.execute(options['cc'] + ' -dumpmachine').output
 	}
 
-	if !('db' in p.cfg) {
-		p.cfg['db'] = p.cfg['src'] + '/db'
+	mut placeholders := map[string]string
+	placeholders['pwd'] = os.getwd()
+	cfg = util.read_config(options['config'], placeholders)
+
+	for key in cfg.keys() {
+		if key in options.keys() {
+			options[key] = cfg[key]
+		}
 	}
 
-	p.cfgdata.rootdir = p.cfg['root']
-	p.cfgdata.srcdir = p.cfg['src']
-	p.cfgdata.dbdir = p.cfg['db']
-	p.cfgdata.pkgdir = p.cfg['src'] + '/pkg'
-	p.cfgdata.stuff = p.cfg['src'] + '/stuff'
-	p.cfgdata.dldir = p.cfg['work'] + '/dl'
-	p.cfgdata.bldir = p.cfg['work'] + '/build'
-	p.cfgdata.built = p.cfg['work'] + '/built'
+	if ! os.exists(cfg['root']) {
+		os.mkdir(cfg['root']) or { }
+	}
 
-	os.mkdir(p.cfg['src']) or { }
-	os.mkdir(p.cfg['work']) or { }
+	if !('src' in cfg) {
+		p.cfg['src'] = cfg['root'] + '/src'
+	}
+
+	if !('work' in cfg) {
+		p.cfg['work'] = cfg['src']
+	}
+
+	if !('db' in cfg) {
+		p.cfg['db'] = cfg['src'] + '/db'
+	}
+
+	p.cfgdata.rootdir = cfg['root']
+	p.cfgdata.srcdir = cfg['src']
+	p.cfgdata.dbdir = cfg['db']
+	p.cfgdata.pkgdir = cfg['src'] + '/pkg'
+	p.cfgdata.stuff = cfg['src'] + '/stuff'
+	p.cfgdata.dldir = cfg['work'] + '/dl'
+	p.cfgdata.bldir = cfg['work'] + '/build'
+	p.cfgdata.built = cfg['work'] + '/built'
+
+	os.mkdir(cfg['src']) or { }
+	os.mkdir(cfg['work']) or { }
 	os.mkdir(p.cfgdata.dldir) or { }
 	os.mkdir(p.cfgdata.bldir) or { }
 	os.mkdir(p.cfgdata.built) or { }
 
 	os.chdir(p.cfgdata.srcdir) or { }
+
+	p.cfg = cfg
+	p.options = options.clone()
 
 	return true
 }
