@@ -7,8 +7,8 @@ import util
 pub struct Package {
 pub mut:
 	name string [required]
+	cfg map[string]string [required]
 	cfgdata util.Data [required]
-	options map[string]string [required]
 	data map[string][]string
 	vars map[string]string
 
@@ -28,13 +28,14 @@ pub mut:
 	archives map[string]string
 }
 
-pub fn (mut p Package) read(pkgfile string) {
+pub fn (mut p Package) read(pkgfile string) bool {
 	if p.is_read {
-		return
+		return true
 	}
 
 	if ! os.exists(pkgfile) {
-		return
+		log.err('package is not found')
+		return false
 	}
 
 	mut lines := os.read_lines(pkgfile) or { panic(err) }
@@ -61,11 +62,17 @@ pub fn (mut p Package) read(pkgfile string) {
 	p.util.init()
 
 	p.is_read = true
+
+	return true
 }
 
-pub fn (mut p Package) read_archive(archive string) {
+pub fn (mut p Package) read_archive(archive string) bool {
 	if p.is_read {
-		return
+		return true
+	}
+
+	if ! os.exists(archive) {
+		return false
 	}
 
 	os.mkdir(p.cfgdata.rootdir) or { }
@@ -90,6 +97,8 @@ pub fn (mut p Package) read_archive(archive string) {
 	p.db = p.cfgdata.dbdir + '/$p.name'
 
 	p.is_read = true
+
+	return true
 }
 
 pub fn (p Package) get_deps() []string {
@@ -119,7 +128,7 @@ pub fn (p Package) is_no(val string) bool {
 }
 
 pub fn (p Package) sys(cmd string) int {
-	if p.options['debug'] != 'yes' {
+	if p.cfg['debug'] != 'yes' {
 		return os.system(cmd + ' &>/dev/null')
 	} else {
 		return os.system(cmd)
@@ -216,7 +225,7 @@ pub fn (p Package) placeholders(str string) string {
 
 	mut placeholders := p.vars.clone()
 
-	for key, val in p.options {
+	for key, val in p.cfg {
 		placeholders[key] = val
 	}
 
@@ -224,8 +233,7 @@ pub fn (p Package) placeholders(str string) string {
 	placeholders['files'] = p.files
 	placeholders['root'] = p.cfgdata.rootdir
 	placeholders['dest'] = p.dest
-	placeholders['make'] = 'make -j' + p.options['jobs']
-	placeholders['prefix'] = p.options['prefix']
+	placeholders['make'] = 'make -j' + p.cfg['jobs']
 
 	result = util.apply_placeholders(result, placeholders)
 
@@ -293,7 +301,7 @@ pub fn (mut p Package) get_archive() string {
 
 pub fn (mut p Package) build() bool {
 	if os.exists(p.get_archive()) {
-		if p.options['rebuild'] != 'yes' {
+		if p.cfg['rebuild'] != 'yes' {
 			log.err('package is already built, pass -rebuild to rebuild it')
 			return false
 		} else {

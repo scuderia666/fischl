@@ -18,14 +18,13 @@ pub mut:
 	packages map[string]Package
 	cfg map[string]string
 	cfgdata util.Data
-	options map[string]string
 
 	dependencies []string
 	marked []string
 }
 
 pub fn (mut p Program) start(args map[string]string) bool {
-	mut options := {
+	mut cfg := {
 		'rebuild': 'no'
 		'debug': 'no'
 		'deps': 'yes'
@@ -50,73 +49,55 @@ pub fn (mut p Program) start(args map[string]string) bool {
 
 	mut lines := []string{}
 
-	for var, val in options {
+	for var, val in cfg {
 		lines << var + ' ' + val.replace('%pwd', os.getwd())
 	}
 
-	options = util.read_vars(lines)
+	cfg = util.read_vars(lines)
 
 	if args.len > 0 {
-		for var, val in options {
+		for var, val in cfg {
 			if var in args.keys() {
 				if args[var] != '' {
-					options[var] = args[var].replace('%pwd', os.getwd())
+					cfg[var] = args[var].replace('%pwd', os.getwd())
 				} else if val == 'no' {
-					options[var] = 'yes'
+					cfg[var] = 'yes'
 				}
 			}
 		}
 	}
 
-	if ! os.exists(options['config']) {
-		exit(1)
-	}
+	if cfg['config'] != '' && os.exists(cfg['config']) {
+		mut placeholders := map[string]string
+		placeholders['pwd'] = os.getwd()
+		config := util.read_config(cfg['config'], placeholders)
 
-	if options['jobs'].int() > runtime.nr_cpus() + 1 {
-		options['jobs'] = (runtime.nr_cpus() + 1).str()
-	} else if options['jobs'].int() < 1 {
-		options['jobs'] = '1'
-	}
-
-	os.setenv('CC', options['cc'], true)
-	os.setenv('CXX', options['cxx'], true)
-	os.setenv('CFLAGS', options['cflags'], true)
-	os.setenv('CXXFLAGS', options['cxxflags'], true)
-	os.setenv('LDFLAGS', options['ldflags'], true)
-
-	if options['host'] == '' {
-		options['host'] = os.execute(options['cc'] + ' -dumpmachine').output
-	}
-
-	if options['target'] == '' {
-		options['target'] = os.execute(options['cc'] + ' -dumpmachine').output
-	}
-
-	mut placeholders := map[string]string
-	placeholders['pwd'] = os.getwd()
-	cfg = util.read_config(options['config'], placeholders)
-
-	for key in cfg.keys() {
-		if key in options.keys() {
-			options[key] = cfg[key]
+		for key in config.keys() {
+			if key in cfg.keys() {
+				cfg[key] = config[key]
+			}
 		}
 	}
 
-	if ! os.exists(cfg['root']) {
-		os.mkdir(cfg['root']) or { }
+	if cfg['jobs'].int() > runtime.nr_cpus() + 1 {
+		cfg['jobs'] = (runtime.nr_cpus() + 1).str()
+	} else if cfg['jobs'].int() < 1 {
+		cfg['jobs'] = '1'
 	}
 
-	if !('src' in cfg) {
-		p.cfg['src'] = cfg['root'] + '/src'
+	if cfg['host'] == '' {
+		cfg['host'] = os.execute(cfg['cc'] + ' -dumpmachine').output
 	}
 
-	if !('work' in cfg) {
-		p.cfg['work'] = cfg['src']
+	if cfg['target'] == '' {
+		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output
 	}
 
-	if !('db' in cfg) {
-		p.cfg['db'] = cfg['src'] + '/db'
-	}
+	os.setenv('CC', cfg['cc'], true)
+	os.setenv('CXX', cfg['cxx'], true)
+	os.setenv('CFLAGS', cfg['cflags'], true)
+	os.setenv('CXXFLAGS', cfg['cxxflags'], true)
+	os.setenv('LDFLAGS', cfg['ldflags'], true)
 
 	p.cfgdata.rootdir = cfg['root']
 	p.cfgdata.srcdir = cfg['src']
@@ -127,6 +108,7 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	p.cfgdata.bldir = cfg['work'] + '/build'
 	p.cfgdata.built = cfg['work'] + '/built'
 
+	os.mkdir(cfg['root']) or { }
 	os.mkdir(cfg['src']) or { }
 	os.mkdir(cfg['work']) or { }
 	os.mkdir(p.cfgdata.dldir) or { }
@@ -135,19 +117,24 @@ pub fn (mut p Program) start(args map[string]string) bool {
 
 	os.chdir(p.cfgdata.srcdir) or { }
 
-	p.cfg = cfg
-	p.options = options.clone()
+	p.cfg = cfg.clone()
 
 	return true
 }
 
-pub fn (mut p Program) dependency(pkgname string, install bool) {
+pub fn (mut p Program) dependency(pkgname string, install bool) bool {
 	p.add_package(pkgname)
 
+	mut res := true
+
 	if install {
-		p.read_archive(pkgname)
+		res = p.read_archive(pkgname)
 	} else {
-		p.read_package(pkgname)
+		res = p.read_package(pkgname)
+	}
+
+	if ! res {
+		return false
 	}
 
 	deps := p.packages[pkgname].get_deps()
@@ -155,13 +142,18 @@ pub fn (mut p Program) dependency(pkgname string, install bool) {
 	for dep in deps {
 		if !(dep in p.marked) {
 			p. marked << dep
-			p.dependency(dep, install)
+
+			if ! p.dependency(dep, install) {
+				return false
+			}
 		}
 	}
 
 	if !(pkgname in p.dependencies) {
 		p.dependencies << pkgname
 	}
+
+	return true
 }
 
 pub fn (p Program) is_yes(val string) bool {
@@ -185,30 +177,32 @@ pub fn (mut p Program) add_package(name string) {
 		return
 	}
 
-	mut pkg := Package{name: name, cfgdata: p.cfgdata, options: p.options}
+	mut pkg := Package{name: name, cfg: p.cfg, cfgdata: p.cfgdata}
 
 	p.packages[name] = pkg
 }
 
-pub fn (mut p Program) read_package(name string) {
+pub fn (mut p Program) read_package(name string) bool {
 	if !(name in p.packages) {
-		return
+		return false
 	}
 
-	p.packages[name].read(p.cfgdata.pkgdir + '/$name')
+	return p.packages[name].read(p.cfgdata.pkgdir + '/$name')
 }
 
-pub fn (mut p Program) read_archive(name string) {
+pub fn (mut p Program) read_archive(name string) bool {
 	if !(name in p.packages) {
-		return
+		return false
 	}
 
-	p.packages[name].read_archive(p.packages[name].get_archive())
+	return p.packages[name].read_archive(p.packages[name].get_archive())
 }
 
 pub fn (mut p Program) get_depends(pkgs []string, install bool) string {
 	for pkg in pkgs {
-		p.dependency(pkg, install)
+		if ! p.dependency(pkg, install) {
+			return ''
+		}
 	}
 
 	mut pool := ''
@@ -226,6 +220,10 @@ pub fn (mut p Program) get_depends(pkgs []string, install bool) string {
 
 pub fn (mut p Program) do_build(pkgs []string) bool {
 	pool := p.get_depends(pkgs, false)
+
+	if pool == '' {
+		return false
+	}
 
 	log.info('following packages will be built: ' + pool)
 
@@ -249,6 +247,10 @@ pub fn (mut p Program) do_build(pkgs []string) bool {
 pub fn (mut p Program) do_install(pkgs []string) bool {
 	pool := p.get_depends(pkgs, true)
 
+	if pool == '' {
+		return false
+	}
+
 	log.info('following packages will be installed: ' + pool)
 
 	log.info_print('do you want to continue? (y/n) ')
@@ -270,7 +272,7 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 
 pub fn (mut p Program) do_uninstall(pkgs []string) bool {
 	for pkg in pkgs {
-		p.read_package(pkg)
+		p.read_archive(pkg)
 		p.packages[pkg].remove()
 	}
 
@@ -279,6 +281,10 @@ pub fn (mut p Program) do_uninstall(pkgs []string) bool {
 
 pub fn (mut p Program) emerge(pkgs []string) bool {
 	pool := p.get_depends(pkgs, false)
+
+	if pool == '' {
+		return false
+	}
 
 	log.info('following packages will be installed: ' + pool)
 
@@ -310,7 +316,7 @@ pub fn (mut p Program) do_action(action Action, pkgs []string) {
 		}
 
 		.build {
-			if p.options['deps'] == 'yes' {
+			if p.cfg['deps'] == 'yes' {
 				p.do_build(pkgs)
 			} else {
 				for pkg in pkgs {
@@ -321,7 +327,7 @@ pub fn (mut p Program) do_action(action Action, pkgs []string) {
 		}
 
 		.install {
-			if p.options['deps'] == 'yes' {
+			if p.cfg['deps'] == 'yes' {
 				p.do_install(pkgs)
 			} else {
 				for pkg in pkgs {

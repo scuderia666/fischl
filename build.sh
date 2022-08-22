@@ -15,7 +15,7 @@ if [[ ! -f xvo ]]; then
 fi
 
 emerge() {
-	./xvo emerge $@ -config %pwd/config
+	./xvo emerge $@ -root %pwd/rootfs -src
 }
 
 emerge musl busybox
