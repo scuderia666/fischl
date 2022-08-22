@@ -208,17 +208,7 @@ pub fn (mut p Program) get_depends(pkgs []string, install bool) string {
 		}
 	}
 
-	mut pool := ''
-
-	for dep in p.dependencies {
-		pool = pool + '$dep, '
-	}
-
-	if pool.len == 0 {
-		return ''
-	}
-
-	return pool.substr(0, pool.len-2)
+	return util.create_pool(p.dependencies)
 }
 
 pub fn (mut p Program) do_build(pkgs []string) bool {
@@ -274,6 +264,16 @@ pub fn (mut p Program) do_install(pkgs []string) bool {
 }
 
 pub fn (mut p Program) do_uninstall(pkgs []string) bool {
+	log.info('following packages will be removed: ' + util.create_pool(pkgs))
+
+	log.info_print('do you want to continue? (y/n) ')
+	value := os.input('')
+
+	if value != 'y' {
+		log.info('cancelled.')
+		return false
+	}
+
 	for pkg in pkgs {
 		p.add_package(pkg)
 		p.packages[pkg].remove()

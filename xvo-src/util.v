@@ -47,6 +47,20 @@ pub fn (u Util) strip_extension(filename string) string {
 	return ''
 }
 
+pub fn create_pool(array []string) string {
+	mut pool := ''
+
+	for val in array {
+		pool = pool + '$val, '
+	}
+
+	if pool.len == 0 {
+		return ''
+	}
+
+	return pool.substr(0, pool.len-2)
+}
+
 pub fn makedir(dir string) bool {
 	if os.exists(dir) && os.is_dir(dir) {
 		return false
