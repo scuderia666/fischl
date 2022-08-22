@@ -4,4 +4,5 @@ test5 hi
 [build]
 echo %test3
 echo %root
-echo %arch
+echo %target
+echo %tools

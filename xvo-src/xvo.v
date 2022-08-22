@@ -51,13 +51,11 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	mut lines := []string{}
 
 	if args.len > 0 {
-		for var, val in cfg {
-			if var in args.keys() {
-				if args[var] != '' {
-					result[var] = args[var].replace('%pwd', os.getwd())
-				} else if val == 'no' {
-					result[var] = 'yes'
-				}
+		for var in args.keys() {
+			if args[var] != '' {
+				result[var] = args[var].replace('%pwd', os.getwd())
+			} else if var in cfg.keys() && cfg[var] == 'no' {
+				result[var] = 'yes'
 			}
 		}
 	}
@@ -74,9 +72,7 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		config := util.read_config(cfg['config'], placeholders)
 
 		for key in config.keys() {
-			if key in cfg.keys() {
-				cfg[key] = config[key]
-			}
+			cfg[key] = config[key]
 		}
 	}
 
