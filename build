@@ -62,7 +62,9 @@ build_toolchain() {
 			-debug yes
 	}
 
-	build test
+	build musl
+	build adjust-tools
+	build binutils
 }
 
 emerge() {

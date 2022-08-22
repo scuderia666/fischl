@@ -57,6 +57,14 @@ pub fn (mut p Program) start(args map[string]string) bool {
 
 	cfg = util.read_vars(lines)
 
+	if cfg['host'] == '' {
+		cfg['host'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
+	}
+
+	if cfg['target'] == '' {
+		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
+	}
+
 	if cfg['config'] != '' && os.exists(cfg['config']) {
 		mut placeholders := cfg.clone()
 		placeholders['pwd'] = os.getwd()
@@ -71,14 +79,6 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		cfg['jobs'] = (runtime.nr_cpus() + 1).str()
 	} else if cfg['jobs'].int() < 1 {
 		cfg['jobs'] = '1'
-	}
-
-	if cfg['host'] == '' {
-		cfg['host'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
-	}
-
-	if cfg['target'] == '' {
-		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
 	}
 
 	tools := ['ar', 'as', 'ranlib', 'ld', 'strip']

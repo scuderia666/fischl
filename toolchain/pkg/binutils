@@ -1,0 +1,24 @@
+ver 2.38
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
+
+[build]
+ln -s lib %toolchain/lib64
+
+mkdir build && cd build
+
+../configure \
+    --prefix=%toolchain \
+    --with-lib-path=%toolchain/lib \
+    --build=%host \
+    --host=%target \
+    --target=%target \
+    --disable-nls \
+    --disable-werror \
+    --with-sysroot
+
+%make && make install
+%make -C ld clean
+%make -C ld LIB_PATH=/usr/lib:/lib
+cp ld/ld-new %toolchain/bin
