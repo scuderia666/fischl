@@ -57,6 +57,7 @@ build_toolchain() {
 			-bl %pwd/out/tc_build \
 			-scripts %pwd/scripts \
 			-target %arch-linux-musl \
+			-config %pwd/config.toolchain \
 			-nopackage yes \
 			-debug yes
 	}

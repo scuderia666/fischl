@@ -81,6 +81,16 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		cfg['target'] = os.execute(cfg['cc'] + ' -dumpmachine').output.replace('\n', '')
 	}
 
+	tools := ['ar', 'as', 'ranlib', 'ld', 'strip']
+
+	for tool in tools {
+		if cfg[tool] == '' {
+			cfg[tool] = tool
+		}
+
+		os.setenv(tool.to_upper(), cfg[tool], true)
+	}
+
 	os.setenv('CC', cfg['cc'], true)
 	os.setenv('CXX', cfg['cxx'], true)
 	os.setenv('CFLAGS', cfg['cflags'], true)

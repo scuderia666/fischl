@@ -1,0 +1,7 @@
+cc %target-gcc
+cxx %target-g++
+ar %target-ar
+as %target-as
+ranlib %target-ranlib
+ld %target-ld
+strip %target-strip
