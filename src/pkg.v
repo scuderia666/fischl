@@ -235,11 +235,12 @@ pub fn (p Package) placeholders(str string) string {
 		placeholders[key] = val
 	}
 
-	placeholders['stuff'] = p.cfg['stuff']
-	placeholders['files'] = p.files
-	placeholders['root'] = p.cfg['root']
 	placeholders['dest'] = p.dest
+	placeholders['files'] = p.files
+
+	placeholders['conf'] = './configure --prefix ' + p.cfg['prefix']
 	placeholders['make'] = 'make -j' + p.cfg['jobs']
+	placeholders['samu'] = 'samu -j' + p.cfg['jobs']
 
 	result = util.apply_placeholders(result, placeholders)
 
