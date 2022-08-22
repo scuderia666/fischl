@@ -55,7 +55,11 @@ pub fn (mut p Package) read(pkgfile string) bool {
 		}
 	}
 
-	p.fullname = p.name + '-' + p.vars['ver']
+	if p.val('ver') == '' {
+		p.vars['ver'] = 'unknown'
+	}
+
+	p.fullname = p.name + '-' + p.val('ver')
 
 	p.dl = p.cfg['dl'] + '/$p.name'
 	p.bl = p.cfg['bl'] + '/$p.name'
@@ -113,20 +117,20 @@ pub fn (p Package) get_deps() []string {
 	return deps
 }
 
-pub fn (p Package) is_yes(val string) bool {
-	if val in p.vars {
-		return p.vars[val] == 'yes'
-	}
-
-	return false
+pub fn (p Package) is_yes(var string) bool {
+	return p.val(var) == 'yes'
 }
 
-pub fn (p Package) is_no(val string) bool {
-	if val in p.vars {
-		return p.vars[val] == 'no'
+pub fn (p Package) is_no(var string) bool {
+	return p.val(var) == 'no'
+}
+
+pub fn (p Package) val(var string) string {
+	if var in p.vars.keys() {
+		return p.vars[var]
 	}
 
-	return false
+	return ''
 }
 
 pub fn (p Package) sys(cmd string) int {
@@ -252,15 +256,14 @@ pub fn (mut p Package) create_script() {
 	mut f := os.create(script) or { panic(err) }
 
 	f.write_string('#!/bin/sh' + '\n') or { }
-	f.write_string('set -e' + '\n') or { }
 
 	if p.archives.len == 1 {
 		f.write_string('cd ' + p.archives.values()[0] + '\n') or { }
 	} else if 'workdir' in p.vars.keys() {
-		f.write_string('cd ' + p.vars['workdir'] + '\n') or { }
+		f.write_string('cd ' + p.val('workdir') + '\n') or { }
 	}
 
-	if ('nopatch' in p.vars.keys() && p.vars['nopatch'] != 'yes') && (p.archives.len == 1 || ('forcepatch' in p.vars.keys() && p.vars['forcepatch'] == 'yes')) {
+	if p.val('nopatch') != 'yes' && (p.archives.len == 1 || p.val('forcepatch') == 'yes') {
 		if os.exists(p.patches) {
 			files := os.ls(p.patches) or { []string{} }
 
@@ -276,6 +279,8 @@ pub fn (mut p Package) create_script() {
 		}
 	}
 
+	f.write_string('set -e' + '\n') or { }
+
 	for line in p.data['build'] {
 		f.write_string(p.placeholders(line) + '\n') or { }
 	}
@@ -289,7 +294,7 @@ pub fn (mut p Package) package() {
 
 		mut f := os.create(p.dest + '/pkginfo') or { panic(err) }
 
-		f.write_string('ver ' + p.vars['ver'] + '\n') or { }
+		f.write_string('ver ' + p.val('ver') + '\n') or { }
 
 		if 'deps' in p.data.keys() {
 			f.write_string('\n[deps]' + '\n') or { }
