@@ -22,6 +22,7 @@ pub mut:
 	db string
 	dest string
 	files string
+	patches string
 
 	sources map[string]string
 	archives map[string]string
@@ -60,6 +61,7 @@ pub fn (mut p Package) read(pkgfile string) bool {
 	p.bl = p.cfg['bl'] + '/$p.name'
 	p.dest = p.bl + '/out'
 	p.files = p.cfg['stuff'] + '/$p.name'
+	p.patches = p.files + '/patches'
 
 	p.util.init()
 
@@ -254,8 +256,24 @@ pub fn (mut p Package) create_script() {
 
 	if p.archives.len == 1 {
 		f.write_string('cd ' + p.archives.values()[0] + '\n') or { }
-	} else if 'workdir' in p.vars {
+	} else if 'workdir' in p.vars.keys() {
 		f.write_string('cd ' + p.vars['workdir'] + '\n') or { }
+	}
+
+	if ('nopatch' in p.vars.keys() && p.vars['nopatch'] != 'yes') && (p.archives.len == 1 || ('forcepatch' in p.vars.keys() && p.vars['forcepatch'] == 'yes')) {
+		if os.exists(p.patches) {
+			files := os.ls(p.patches) or { []string{} }
+
+			for filename in files {
+				file := p.patches + '/$filename'
+
+				if os.is_file(file) {
+					if filename.contains('.patch') || filename.contains('.diff') {
+						f.write_string('patch -p1 < ' + file + '\n') or { }
+					}
+				}
+			}
+		}
 	}
 
 	for line in p.data['build'] {
