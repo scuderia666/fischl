@@ -153,7 +153,7 @@ pub fn (mut p Package) get_sources() bool {
 		mut source := src
 		mut filename := os.base(src)
 
-		if src.contains(':') {
+		if os.base(src).contains(':') {
 			filename = os.base(src).all_after(':')
 			source = src.all_before(':' + filename)
 		}
