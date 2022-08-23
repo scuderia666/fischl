@@ -47,10 +47,13 @@ pub fn (mut p Package) read(pkgfile string) bool {
 	sects := ['options', 'src', 'deps', 'build']
 
 	p.vars = util.read_vars(lines)
-	p.vars['name'] = p.name
+
+	if p.vars['name'] == '' {
+		p.vars['name'] = p.name
+	}
 
 	for var, val in p.vars {
-		p.vars[var] = val.replace('%name', p.name)
+		p.vars[var] = val.replace('%name', p.vars['name'])
 	}
 
 	for sect in sects {
@@ -268,7 +271,7 @@ pub fn (mut p Package) create_script() {
 		f.write_string('cd ' + p.val('workdir') + '\n') or { }
 	}
 
-	if p.val('nopatch') != 'yes' && (p.archives.len == 1 || p.val('forcepatch') == 'yes') {
+	if p.val('nopatch') != 'yes' && (p.archives.len == 1 || p.val('force-patch') == 'yes') {
 		if os.exists(p.patches) {
 			files := os.ls(p.patches) or { []string{} }
 

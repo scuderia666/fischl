@@ -4,6 +4,7 @@ mpc_ver 1.2.1
 mpfr_ver 4.1.0
 
 workdir %name-%ver
+force-patch yes
 
 [src]
 https://ftp.gnu.org/gnu/%name/%name-%ver/%name-%ver.tar.xz
@@ -16,35 +17,33 @@ mv ../gmp* gmp
 mv ../mpc* mpc
 mv ../mpfr* mpfr
 
+sed -e '/m64=/s/lib64/lib/' \
+              -i.orig gcc/config/i386/t-linux64
+
 mkdir build && cd build
 
-CFLAGS='-g0 -O0' \
-CXXFLAGS='-g0 -O0' \
+AR=ar LDFLAGS="-Wl,-rpath,%tools/lib" \
 ../configure \
-	--prefix=%tools \
-	--build=%host \
-	--host=%host \
-	--target=%target \
-	--with-sysroot=%tools/%target \
-	--with-newlib \
-	--disable-nls \
-	--disable-libvtv \
-	--disable-libitm \
-	--disable-libssp \
-	--disable-shared \
-	--disable-libgomp \
-	--without-headers \
-	--disable-threads \
-	--disable-multilib \
-	--disable-libatomic \
-	--disable-libstdcxx \
-	--disable-libquadmath \
-	--disable-libsanitizer \
-	--disable-decimal-float \
-	--enable-clocale=generic \
-	--enable-languages=c \
-	--with-arch=x86-64 \
+    --prefix=%tools \
+    --build=%host \
+    --host=%host \
+    --target=%target \
+    --disable-multilib \
+    --with-sysroot=%tools \
+    --disable-nls \
+    --enable-shared \
+    --enable-languages=c,c++ \
+    --enable-threads=posix \
+    --enable-clocale=generic \
+    --enable-libstdcxx-time \
+    --enable-fully-dynamic-string \
+    --disable-symvers \
+    --disable-libsanitizer \
+    --disable-lto-plugin \
+    --disable-libssp \
+    --with-arch=x86-64 \
 	--with-tune=generic
 
-%make all-gcc all-target-libgcc
-make install-gcc install-target-libgcc
+%make AS_FOR_TARGET="%target-as" \
+    LD_FOR_TARGET="%target-ld"
+make install

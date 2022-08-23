@@ -10,15 +10,3 @@ https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-%ver.tar.xz
 mkdir -p %tools/%target/include
 cp -r usr/include/* %tools/%target/include
 rm %tools/%target/include/Makefile
-
-[build2]
-%make mrproper
-
-make prefix=%prefix ARCH=%arch headers
-mkdir -p %tools/%target/include
-
-find include -name '.*' -delete
-rm include/Makefile
-cp -a include/* %tools/%target/include
-
-find %tools \( -name .install -o -name ..install.cmd \) -print0 | xargs -0 rm -rf

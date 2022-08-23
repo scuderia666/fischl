@@ -1,0 +1,51 @@
+name gcc
+ver 11.2.0
+gmp_ver 6.2.1
+mpc_ver 1.2.1
+mpfr_ver 4.1.0
+
+workdir %name-%ver
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver/%name-%ver.tar.xz
+https://ftp.gnu.org/gnu/gmp/gmp-%gmp_ver.tar.xz
+https://ftp.gnu.org/gnu/mpc/mpc-%mpc_ver.tar.gz
+https://www.mpfr.org/mpfr-%mpfr_ver/mpfr-%mpfr_ver.tar.xz
+
+[build]
+mv ../gmp* gmp
+mv ../mpc* mpc
+mv ../mpfr* mpfr
+
+mkdir build && cd build
+
+CFLAGS='-g0 -O0' \
+CXXFLAGS='-g0 -O0' \
+../configure \
+	--prefix=%tools \
+	--build=%host \
+	--host=%host \
+	--target=%target \
+	--with-sysroot=%tools/%target \
+	--with-newlib \
+	--disable-nls \
+	--disable-libvtv \
+	--disable-libitm \
+	--disable-libssp \
+	--disable-shared \
+	--disable-libgomp \
+	--without-headers \
+	--disable-threads \
+	--disable-multilib \
+	--disable-libatomic \
+	--disable-libstdcxx \
+	--disable-libquadmath \
+	--disable-libsanitizer \
+	--disable-decimal-float \
+	--enable-clocale=generic \
+	--enable-languages=c \
+	--with-arch=x86-64 \
+	--with-tune=generic
+
+%make all-gcc all-target-libgcc
+%make install-gcc install-target-libgcc

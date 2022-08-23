@@ -37,9 +37,9 @@ build_tools() {
 
 	build linux-headers
 	build binutils
-	build gcc
+	build gcc-static
 	build musl
-	build gcc-final
+	build gcc
 	build file
 }
 
@@ -65,6 +65,7 @@ build_toolchain() {
 	build musl
 	build adjust-tools
 	build binutils
+	build curl
 }
 
 emerge() {
