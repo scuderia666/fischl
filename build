@@ -63,9 +63,9 @@ build_toolchain() {
 	}
 
 	build musl
-	build adjust-tools
+	#build adjust-tools
 	build binutils
-	build curl
+	#build curl
 }
 
 emerge() {

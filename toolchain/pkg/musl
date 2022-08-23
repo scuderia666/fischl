@@ -5,13 +5,12 @@ https://musl.libc.org/releases/%name-%ver.tar.gz
 
 [build]
 ./configure \
-    CROSS_COMPILE=%target- \
-    --prefix=/ \
-    --target=%target
+    CROSS_COMPILE="%target-" \
+    --prefix=%toolchain \
+    --libdir=%toolchain/lib \
+    --syslibdir=%toolchain/lib \
+    --build=$host \
+    --host=$target \
+    --enable-optimize
 
-%make && make DESTDIR=%toolchain install
-
-mkdir -p %toolchain/etc
-rm %toolchain/lib/ld-musl-%arch.so.1
-ln -s libc.so %toolchain/lib/ld-musl-%arch.so.1
-echo "%toolchain/lib" > %toolchain/etc/ld-musl-%arch.path
+%make % make install

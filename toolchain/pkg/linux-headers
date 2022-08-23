@@ -1,0 +1,13 @@
+ver 5.16.20
+
+[src]
+
+[build]
+make mrproper
+make headers ARCH=%arch
+mkdir -p -- "%toolchain/tools/include"
+cp -Rp usr/include/* "${rootdir}/tools/include/"
+
+# Remove cruft
+find "${rootdir}/tools/include" -name '.*' -exec rm -rf {} +
+rm -f "${rootdir}/tools/include/Makefile"
