@@ -1,0 +1,20 @@
+[src]
+http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
+
+[build]
+[ %stage = 0 ] && CC=%root/bin/musl-gcc
+
+cp -f %stuff/config.sub .
+GNULIB_CPPFLAGS=$(%stuff/gnulibfix lib)
+
+[ %stage = 0 ] && xconfflags="--host=$($CC -dumpmachine)"
+
+echo $xconfflags
+
+CC="$CC -static" \
+CFLAGS="-D_GNU_SOURCE -Werror-implicit-function-declaration $GNULIB_CPPFLAGS" \
+LDFLAGS="-static $optldflags" \
+  ./configure -C --prefix=%prefix $xconfflags
+
+%make
+make DESTDIR=%dest install

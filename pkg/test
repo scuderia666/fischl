@@ -1,9 +1,0 @@
-test3 %test5
-test5 hi
-
-[build]
-echo %test3
-echo %root
-echo %target
-echo %tools
-echo %pwd

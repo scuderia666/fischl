@@ -68,8 +68,8 @@ build_toolchain() {
 	#build curl
 }
 
-emerge() {
-	./out/xvo emerge $@ \
+action() {
+	./out/xvo $1 $2 \
 		-root %pwd/out/rootfs \
 		-tools %pwd/out/tools \
 		-pkg %pwd/pkg \
@@ -78,11 +78,32 @@ emerge() {
 		-bl %pwd/out/build \
 		-scripts %pwd/scripts \
 		-target %arch-linux-musl \
+		-stage 0 \
 		-debug yes
+}
+
+emerge() {
+	action emerge $1
+}
+
+remove() {
+	action remove $1
+}
+
+build_system() {
+	emerge kernel-headers
+	emerge gcc3
+	emerge musl
+	emerge patch
+	emerge busybox
+	emerge binutils
+	emerge make
 }
 
 main() {
 	case $1 in
+		system) build_system ;;
+		remove) shift; remove $1 ;;
 		tools) build_tools ;;
 		toolchain) build_toolchain ;;
 		*) emerge $@ ;;

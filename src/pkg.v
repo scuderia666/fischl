@@ -287,7 +287,7 @@ pub fn (mut p Package) create_script() {
 		}
 	}
 
-	f.write_string('set -e' + '\n') or { }
+	//f.write_string('set -e' + '\n') or { }
 
 	for line in p.data['build'] {
 		f.write_string(p.placeholders(line) + '\n') or { }
@@ -313,6 +313,8 @@ pub fn (mut p Package) package() {
 		}
 
 		f.close()
+
+		os.mkdir_all(p.cfg['out']) or { }
 
 		os.chdir(p.dest) or { }
 
