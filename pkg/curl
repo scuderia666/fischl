@@ -1,0 +1,25 @@
+[src]
+https://curl.haxx.se/download/curl-7.75.0.tar.xz
+
+[deps]
+libressl
+ca-certificates
+zlib
+
+[build]
+[ %stage = 0 ] && \
+  xconfflags="--host=$($CC -dumpmachine) --with-sysroot=%root"
+
+CPPFLAGS="-D_GNU_SOURCE" \
+LIBS="-lssl -lcrypto -lz" \
+./configure -C \
+  --prefix=%prefix \
+  --with-ssl \
+  --enable-ipv6 \
+  --without-librtmp \
+  --with-ca-path=/etc/ssl/certs \
+  --with-random=/dev/urandom $xconfflags
+
+sed -i -e '/SUBDIRS/s:scripts::' Makefile
+%make
+make DESTDIR=%dest install

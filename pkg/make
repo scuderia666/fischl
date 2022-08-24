@@ -2,7 +2,7 @@
 http://ftp.gnu.org/gnu/make/make-3.82.tar.bz2
 
 [build]
-[ "$STAGE" = "0" ] && CC="$butch_root_dir"/bin/musl-gcc
+[ %stage = 0 ] && CC=%root/bin/musl-gcc
 cp -f %stuff/config.sub config/
 
 xconfflags="--build=$($CC -dumpmachine)"
