@@ -144,6 +144,10 @@ pub fn (mut p Program) dependency(pkgname string, install bool) bool {
 		}
 	}
 
+	if !('build' in p.packages[pkgname].data.keys()) {
+		return true
+	}
+
 	if !(pkgname in p.dependencies) {
 		p.dependencies << pkgname
 	}

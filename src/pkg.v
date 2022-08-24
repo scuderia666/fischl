@@ -37,6 +37,8 @@ pub fn (mut p Package) read(pkgfile string) bool {
 		return true
 	}
 
+	println(pkgfile)
+
 	if ! os.exists(pkgfile) {
 		log.err('package is not found')
 		return false
@@ -58,6 +60,9 @@ pub fn (mut p Package) read(pkgfile string) bool {
 
 	for sect in sects {
 		for line in util.read_sect(lines, sect) {
+			if line[0].ascii_str() == '&' {
+
+			}
 			p.data[sect] << util.apply_placeholders(line, p.vars)
 		}
 	}

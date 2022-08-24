@@ -9,8 +9,6 @@ GNULIB_CPPFLAGS=$(%stuff/gnulibfix lib)
 
 [ %stage = 0 ] && xconfflags="--host=$($CC -dumpmachine)"
 
-echo $xconfflags
-
 CC="$CC -static" \
 CFLAGS="-D_GNU_SOURCE -Werror-implicit-function-declaration $GNULIB_CPPFLAGS" \
 LDFLAGS="-static $optldflags" \

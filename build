@@ -79,6 +79,7 @@ action() {
 		-scripts %pwd/scripts \
 		-target %arch-linux-musl \
 		-stage 0 \
+		-rebuild yes \
 		-debug yes
 }
 
@@ -98,6 +99,8 @@ build_system() {
 	emerge busybox
 	emerge binutils
 	emerge make
+	emerge bsdtar
+	#emerge curl
 }
 
 main() {
