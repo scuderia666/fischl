@@ -1,10 +1,9 @@
 module xvo
 
 import os
-import util
 import log
+import util
 import runtime
-import pkg { Package }
 
 pub enum Action {
 	emerge
@@ -176,7 +175,7 @@ pub fn (mut p Program) add_package(name string) {
 		return
 	}
 
-	mut pkg := Package{name: name, cfg: p.cfg}
+	mut pkg := Package{name: name, prog: p}
 
 	pkg.on_add()
 

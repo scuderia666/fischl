@@ -1,6 +1,6 @@
 import os
 import util
-import xvo { Program, Action }
+import xvo { Action, Program }
 
 const (
 	version = '0.1'
