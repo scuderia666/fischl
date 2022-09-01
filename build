@@ -69,7 +69,9 @@ build_toolchain() {
 }
 
 action() {
-	./out/xvo $1 $2 \
+	local action=$1
+	shift;
+	./out/xvo $action $@ \
 		-root %pwd/out/rootfs \
 		-tools %pwd/out/tools \
 		-pkg %pwd/pkg \
@@ -84,29 +86,21 @@ action() {
 }
 
 emerge() {
-	action emerge $1
+	action emerge $@
 }
 
 remove() {
-	action remove $1
+	action remove $@
 }
 
 build_system() {
-	emerge kernel-headers
-	emerge gcc3
-	emerge musl
-	emerge patch
-	emerge busybox
-	emerge binutils
-	emerge make
-	emerge bsdtar
-	#emerge curl
+	emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
 }
 
 main() {
 	case $1 in
 		system) build_system ;;
-		remove) shift; remove $1 ;;
+		remove) shift; remove $@ ;;
 		tools) build_tools ;;
 		toolchain) build_toolchain ;;
 		*) emerge $@ ;;
