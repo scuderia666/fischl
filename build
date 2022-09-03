@@ -39,6 +39,7 @@ build_tools() {
 	build linux-headers
 	build gcc-static
 	build musl
+	build gcc
 	return
 
 	build linux-headers
