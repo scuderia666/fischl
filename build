@@ -38,6 +38,7 @@ build_tools() {
 	build binutils
 	build linux-headers
 	build gcc-static
+	build musl
 	return
 
 	build linux-headers
