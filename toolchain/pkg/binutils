@@ -7,8 +7,8 @@ https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
 mkdir build && cd build
 
 ../configure \
-    --prefix=%tools \
-    --libdir=%tools/lib \
+    --prefix=%toolchain \
+    --libdir=%toolchain/lib \
     --host=%host \
     --target=%target \
     --enable-deterministic-archives \
@@ -19,6 +19,6 @@ mkdir build && cd build
     --disable-nls \
     --disable-ppl-version-check \
     --disable-cloog-version-check \
-    --with-sysroot=%tools/%target
+    --with-sysroot=%toolchain/%target
 
 %make && make install

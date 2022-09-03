@@ -21,14 +21,14 @@ sed -e '/m64=/s/lib64/lib/' \
 
 mkdir build && cd build
 
-AR=ar LDFLAGS="-Wl,-rpath,%tools/lib" \
+AR=ar LDFLAGS="-Wl,-rpath,%toolchain/lib" \
 ../configure \
-    --prefix=%tools \
+    --prefix=%toolchain \
     --build=%host \
     --host=%host \
     --target=%target \
     --disable-multilib \
-    --with-sysroot=%tools \
+    --with-sysroot=%toolchain \
     --disable-nls \
     --enable-shared \
     --enable-languages=c,c++ \

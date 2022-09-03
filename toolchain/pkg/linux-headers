@@ -6,7 +6,7 @@ https://www.kernel.org/pub/linux/kernel/v5.x/linux-%ver.tar.xz
 [build]
 %make mrproper
 %make headers ARCH=%arch
-mkdir -p %tools/%target/include
-cp -R usr/include/* %tools/%target/include
-find %tools/%target/include -name '.*' -exec rm -rf {} +
-rm -f %tools/%target/include/Makefile
+mkdir -p %toolchain/%target/include
+cp -R usr/include/* %toolchain/%target/include
+find %toolchain/%target/include -name '.*' -exec rm -rf {} +
+rm -f %toolchain/%target/include/Makefile

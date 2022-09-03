@@ -21,11 +21,11 @@ mkdir build && cd build
 CFLAGS='-g0 -O0' \
 CXXFLAGS='-g0 -O0' \
 ../configure \
-          --prefix=%tools \
+          --prefix=%toolchain \
           --build=%host \
           --host=%host \
           --target=%target \
-          --with-sysroot=%tools/%target \
+          --with-sysroot=%toolchain/%target \
           --disable-nls \
           --with-newlib \
           --disable-libitm \

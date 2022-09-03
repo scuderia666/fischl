@@ -34,11 +34,7 @@ build_toolchain() {
 			-debug yes
 	}
 
-	build binutils
-	build linux-headers
-	build gcc-static
-	build musl
-	build gcc
+	build binutils linux-headers gcc-static musl gcc
 }
 
 action() {

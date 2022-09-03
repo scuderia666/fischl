@@ -13,15 +13,14 @@ https://musl.libc.org/releases/%name-%ver.tar.gz
     --enable-optimize \
     --enable-debug
 
-%make && make DESTDIR=%tools install
+%make && make DESTDIR=%toolchain install
 
-mkdir -p %tools/usr
-ln -s ../include %tools/usr/include
+mkdir -p %toolchain/usr
+ln -s ../include %toolchain/usr/include
 
-rm -f %tools/lib/ld-musl*
-ln -s libc.so %tools/lib/ld-musl-%arch.so.1
-ln -s ../lib/libc.so %tools/bin/ldd
+rm -f %toolchain/lib/ld-musl*
+ln -s libc.so %toolchain/lib/ld-musl-%arch.so.1
+ln -s ../lib/libc.so %toolchain/bin/ldd
 
-mkdir -p %tools/etc
-printf "%tools/lib\n" >> %tools/etc/ld-musl-%arch.path
-printf "%toolchain/lib\n" >> %tools/etc/ld-musl-%arch.path
+mkdir -p %toolchain/etc
+printf "%toolchain/lib\n" >> %toolchain/etc/ld-musl-%arch.path
