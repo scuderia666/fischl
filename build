@@ -35,6 +35,11 @@ build_tools() {
 			-debug yes
 	}
 
+	build binutils
+	build linux-headers
+	build gcc-static
+	return
+
 	build linux-headers
 	build binutils
 	build gcc-static
@@ -94,7 +99,8 @@ remove() {
 }
 
 build_system() {
-	emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
+	#emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
+	emerge busybox musl
 }
 
 main() {

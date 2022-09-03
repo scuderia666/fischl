@@ -7,14 +7,18 @@ https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
 mkdir build && cd build
 
 ../configure \
-	--prefix=%tools \
-	--target=%target \
-	--with-sysroot=%tools/%target \
-	--disable-nls \
-	--disable-multilib \
-	--disable-werror \
-	--enable-deterministic-archives \
-	--disable-compressed-debug-sections
+    --prefix=%tools \
+    --libdir=%tools/lib \
+    --host=%host \
+    --target=%target \
+    --enable-deterministic-archives \
+    --enable-separate-code \
+    --disable-compressed-debug-sections \
+    --disable-generate-build-notes \
+    --disable-werror \
+    --disable-nls \
+    --disable-ppl-version-check \
+    --disable-cloog-version-check \
+    --with-sysroot=%tools/%target
 
-%make configure-host
 %make && make install

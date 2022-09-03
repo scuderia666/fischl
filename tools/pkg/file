@@ -1,8 +1,0 @@
-ver 5.40
-
-[src]
-https://astron.com/pub/%name/%name-%ver.tar.gz
-
-[build]
-./configure --prefix=%tools --disable-libseccomp
-%make && make install
