@@ -24,8 +24,8 @@ build_toolchain() {
 		./out/xvo build $@ \
 			-root %pwd/out/rootfs \
 			-toolchain %pwd/out/toolchain \
-			-pkg %pwd/tools/pkg \
-			-stuff %pwd/tools/stuff \
+			-pkg %pwd/toolchain/pkg \
+			-stuff %pwd/toolchain/stuff \
 			-dl %pwd/out/toolchain_dl \
 			-bl %pwd/out/toolchain_build \
 			-scripts %pwd/scripts \
