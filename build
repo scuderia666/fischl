@@ -72,6 +72,7 @@ remove() {
 build_system() {
 	#emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
 	emerge musl
+	emerge busybox
 }
 
 main() {
