@@ -1,6 +1,0 @@
-[build]
-specfile=`dirname $(%target-gcc -print-libgcc-file-name)`/specs
-%target-gcc -dumpspecs > specs
-replacement=%toolchain
-sed -i 's/\/lib\/ld-musl-%arch.so.1/\%replacement\/lib\/ld-musl-%arch.so.1/g' specs
-mv specs $specfile

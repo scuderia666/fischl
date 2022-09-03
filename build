@@ -17,18 +17,17 @@ if [[ ! -f out/xvo ]]; then
 	err "couldnt build xvo"
 fi
 
-build_tools() {
-	export PATH=$PWD/out/tools/bin:$PATH
+build_toolchain() {
+	export PATH=$PWD/out/toolchain/bin:$PATH
 
 	build() {
 		./out/xvo build $@ \
 			-root %pwd/out/rootfs \
-			-tools %pwd/out/tools \
 			-toolchain %pwd/out/toolchain \
 			-pkg %pwd/tools/pkg \
 			-stuff %pwd/tools/stuff \
-			-dl %pwd/out/tools_dl \
-			-bl %pwd/out/tools_build \
+			-dl %pwd/out/toolchain_dl \
+			-bl %pwd/out/toolchain_build \
 			-scripts %pwd/scripts \
 			-target %arch-linux-musl \
 			-nopackage yes \
@@ -40,53 +39,23 @@ build_tools() {
 	build gcc-static
 	build musl
 	build gcc
-	return
-
-	build linux-headers
-	build binutils
-	build gcc-static
-	build musl
-	build gcc
-	build file
-}
-
-build_toolchain() {
-	export PATH=$PWD/out/tools/bin:$PATH
-
-	build() {
-		./out/xvo build $@ \
-			-root %pwd/out/rootfs \
-			-tools %pwd/out/tools \
-			-toolchain %pwd/out/toolchain \
-			-pkg %pwd/toolchain/pkg \
-			-stuff %pwd/toolchain/stuff \
-			-dl %pwd/out/tc_dl \
-			-bl %pwd/out/tc_build \
-			-scripts %pwd/scripts \
-			-target %arch-linux-musl \
-			-config %pwd/toolchain/config \
-			-nopackage yes \
-			-debug yes
-	}
-
-	build musl
-	#build adjust-tools
-	build binutils
-	#build curl
 }
 
 action() {
+	export PATH=$PWD/out/toolchain/bin:$PATH
+
 	local action=$1
 	shift;
 	./out/xvo $action $@ \
 		-root %pwd/out/rootfs \
-		-tools %pwd/out/tools \
+		-toolchain %pwd/out/toolchain \
 		-pkg %pwd/pkg \
 		-stuff %pwd/stuff \
 		-dl %pwd/out/dl \
 		-bl %pwd/out/build \
 		-scripts %pwd/scripts \
 		-target %arch-linux-musl \
+		-config %pwd/toolchain/config \
 		-stage 0 \
 		-rebuild yes \
 		-debug yes
@@ -102,15 +71,14 @@ remove() {
 
 build_system() {
 	#emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
-	emerge busybox musl
+	emerge musl
 }
 
 main() {
 	case $1 in
 		system) build_system ;;
-		remove) shift; remove $@ ;;
-		tools) build_tools ;;
 		toolchain) build_toolchain ;;
+		remove) shift; remove $@ ;;
 		*) emerge $@ ;;
 	esac
 

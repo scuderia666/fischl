@@ -1,43 +1,11 @@
-nopatch yes
+ver 1.2.3
 
 [src]
-http://www.musl-libc.org/releases/musl-1.1.24.tar.gz
+https://musl.libc.org/releases/%name-%ver.tar.gz
 
 [build]
-cfgflags=
-if test %stage = 0; then
-	export CC=%root/bin/gcc
-	cfgflags=--enable-gcc-wrapper
-fi
+./configure \
+    --prefix=%prefix \
+    --syslibdir=/lib
 
-patch -p1 < %patches/musl-1.1.18-armasm.patch
-
-./configure --prefix=%prefix --syslibdir=/lib $cfgflags
-
-%make
-make DESTDIR=%dest install
-
-mkdir -p %dest/bin
-ln -sf  ../lib/libc.so %dest/bin/ldd
-
-musl_gcc=%dest/bin/musl-gcc
-
-if test %stage = 0; then
-cat << EOF > %dest/bin/musl-gcc
-#!/bin/sh
-self=\`readlink -f "\$0"\`
-selfdir=\`dirname "\$self"\`/../bin
-exec "\$selfdir/rawcc" "\$@" -specs "\$selfdir/../lib/musl-gcc.specs"
-EOF
-sed -i 's,/lib,'%root'/lib,g' %dest/lib/musl-gcc.specs
-sed -i 's,/include,'%root'/include,g' %dest/lib/musl-gcc.specs
-sed -i 's,/lib/ld-musl,/xxx/xxx/,' %dest/lib/musl-gcc.specs
-else
-cp %files/musl-gcc $musl_gcc
-sed -i "s,AAAA,%arch," $musl_gcc
-sed -i "s,PPPP,%prefix," $musl_gcc
-fi
-chmod +x $musl_gcc
-
-mkdir -p %dest/etc
-printf "%s\n" /lib > %dest/etc/ld-musl-%arch.path
+%make && make DESTDIR=%dest install

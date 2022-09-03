@@ -1,6 +1,0 @@
-[src]
-http://ftp.barfooze.de/pub/sabotage/tarballs/linux-headers-4.19.88.tar.xz
-
-[build]
-make ARCH=x32 prefix=%prefix DESTDIR=%dest install
-install -Dm 644 %stuff/ext2_fs.h %dest/include/linux
