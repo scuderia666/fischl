@@ -61,6 +61,10 @@ emerge() {
 	action emerge $@
 }
 
+install() {
+	action install $@
+}
+
 remove() {
 	action remove $@
 }
@@ -75,6 +79,7 @@ main() {
 	case $1 in
 		system) build_system ;;
 		toolchain) build_toolchain ;;
+		install) shift; install $@ ;;
 		remove) shift; remove $@ ;;
 		*) emerge $@ ;;
 	esac

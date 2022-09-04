@@ -5,8 +5,12 @@ https://busybox.net/downloads/%name-%ver.tar.bz2
 
 [build]
 cp %files/config .config
-%make busybox
+%make busybox \
+    ARCH=%arch \
+    CROSS_COMPILE="%target-"
 make \
 	CONFIG_PREFIX=%dest \
+	ARCH=%arch \
+	CROSS_COMPILE="%target-" \
 	install
 rm -f %dest/linuxrc

@@ -350,6 +350,7 @@ pub fn (mut p Program) do_action(action Action, pkgs []string) {
 				p.do_build(pkgs)
 			} else {
 				for pkg in pkgs {
+					p.add_package(pkg)
 					p.read_package(pkg)
 					p.packages[pkg].build()
 				}
@@ -361,6 +362,7 @@ pub fn (mut p Program) do_action(action Action, pkgs []string) {
 				p.do_install(pkgs)
 			} else {
 				for pkg in pkgs {
+					p.add_package(pkg)
 					p.read_archive(pkg)
 					p.packages[pkg].install()
 				}
