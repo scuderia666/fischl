@@ -1,0 +1,14 @@
+ver 4.3
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.gz
+
+[build]
+./configure \
+    --prefix=%prefix \
+    --build=%host \
+    --host=%target \
+    --disable-nls \
+    --without-guile
+
+%make && make DESTDIR=%dest install
