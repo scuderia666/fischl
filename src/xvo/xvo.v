@@ -80,7 +80,7 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		cfg['jobs'] = '1'
 	}
 
-	tools := ['ar', 'as', 'ranlib', 'ld', 'strip']
+	tools := ['ar', 'as', 'ranlib', 'ld', 'strip', 'pkgconf']
 
 	for tool in tools {
 		if cfg[tool] == '' {
@@ -95,6 +95,14 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	os.setenv('CFLAGS', cfg['cflags'], true)
 	os.setenv('CXXFLAGS', cfg['cxxflags'], true)
 	os.setenv('LDFLAGS', cfg['ldflags'], true)
+
+	root := cfg['root']
+
+	os.setenv('PKG_CONFIG_LIBDIR', '$root/lib/pkgconfig', true)
+	os.setenv('PKG_CONFIG_PATH', '$root/lib/pkgconfig', true)
+	os.setenv('PKG_CONFIG_SYSROOT_DIR', root, true)
+	os.setenv('PKG_CONFIG_SYSTEM_INCLUDE_PATH', '$root/include', true)
+	os.setenv('PKG_CONFIG_SYSTEM_LIB_PATH', '$root/lib', true)
 
 	os.mkdir_all(cfg['root']) or { }
 

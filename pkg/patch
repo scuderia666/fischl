@@ -1,0 +1,12 @@
+ver 2.7.6
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.gz
+
+[build]
+./configure \
+    --prefix=%prefix \
+    --build=%host \
+    --host=%target
+
+%make && make DESTDIR=%dest install

@@ -1,0 +1,18 @@
+ver 7.75.0
+
+[src]
+https://curl.haxx.se/download/%name-%ver.tar.xz
+
+[build]
+mkdir build && cd build
+CPPFLAGS="-D_GNU_SOURCE" \
+../configure \
+    --prefix=%prefix \
+    --host=%target \
+    --with-sysroot=%root \
+    --with-ssl \
+    --enable-ipv6 \
+    --without-librtmp \
+    --with-ca-bundle=/etc/ssl/cert.pem
+
+%make && make DESTDIR=%dest install

@@ -1,0 +1,24 @@
+ver 2.38
+
+[src]
+https://ftp.gnu.org/gnu/%name/%name-%ver.tar.xz
+
+[build]
+mkdir build && cd build
+
+../configure \
+    --prefix=%prefix \
+    --build=%host \
+    --host=%target \
+    --target=%target \
+    --enable-deterministic-archives \
+    --enable-separate-code \
+    --disable-compressed-debug-sections \
+    --disable-generate-build-notes \
+    --disable-werror \
+    --disable-nls \
+    --disable-ppl-version-check \
+    --disable-cloog-version-check \
+    --with-sysroot=%root
+
+%make && make DESTDIR=%dest install

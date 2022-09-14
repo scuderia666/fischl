@@ -1,0 +1,2 @@
+[build]
+install -Dm 644 %files/cacert.pem %dest/etc/ssl/cert.pem

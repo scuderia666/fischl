@@ -1,0 +1,15 @@
+ver 3.1.5
+
+[src]
+https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/%name-%ver.tar.gz
+
+[build]
+CPPFLAGS="-D_GNU_SOURCE" \
+LDFLAGS="-Wl,-rpath-link=%root/lib" \
+./configure \
+    --prefix=%prefix \
+    --host=%target \
+    --with-sysroot=%root \
+    --disable-hardening
+
+%make && make DESTDIR=%dest install

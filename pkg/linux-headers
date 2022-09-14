@@ -1,0 +1,13 @@
+ver 5.16.20
+
+[src]
+https://www.kernel.org/pub/linux/kernel/v5.x/linux-%ver.tar.xz
+
+[build]
+%make mrproper
+%make headers ARCH=%arch
+mkdir -p %dest/include
+cp -R usr/include/* %dest/include
+find %dest/include -name '.*' -exec rm -rf {} +
+rm -f %dest/include/Makefile
+ln -s ../include %dest/usr

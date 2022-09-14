@@ -70,9 +70,17 @@ remove() {
 }
 
 build_system() {
-	#emerge kernel-headers gcc3 musl patch busybox binutils make bsdtar
+	emerge linux-headers
 	emerge musl
 	emerge busybox
+	emerge binutils
+	emerge gcc
+	emerge make
+	emerge patch
+	emerge ca-certificates
+	emerge libressl
+	emerge libz
+	emerge curl
 }
 
 main() {
