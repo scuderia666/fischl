@@ -1,0 +1,5 @@
+[src]
+https://github.com/vlang/v
+
+[build]
+make
