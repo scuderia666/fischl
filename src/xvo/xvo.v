@@ -6,6 +6,7 @@ import util
 import runtime
 
 pub enum Action {
+    @none
 	emerge
 	build
 	install
@@ -349,6 +350,10 @@ pub fn (mut p Program) emerge(pkgs []string) bool {
 
 pub fn (mut p Program) do_action(action Action, pkgs []string) {
 	match action {
+        .@none {
+
+        }
+
 		.emerge {
 			p.emerge(pkgs)
 		}

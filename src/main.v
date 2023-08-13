@@ -19,7 +19,7 @@ fn main() {
 		exit(1)
 	}
 
-	mut action := Action{}
+	mut action := Action.@none
 
 	match args.command {
 		'build' {
