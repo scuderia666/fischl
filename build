@@ -44,6 +44,7 @@ action() {
 	shift;
 	./out/xvo $action $@ \
 		-root %pwd/out/rootfs \
+        -prefix / \
 		-toolchain %pwd/out/toolchain \
 		-pkg %pwd/pkg \
 		-stuff %pwd/stuff \
@@ -73,6 +74,7 @@ build_system() {
 	emerge linux-headers
 	emerge musl
 	emerge busybox
+    return
 	emerge binutils
 	emerge gcc
 	emerge make

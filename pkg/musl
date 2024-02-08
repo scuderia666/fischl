@@ -11,4 +11,4 @@ https://musl.libc.org/releases/%name-%ver.tar.gz
 
 %make && make DESTDIR=%dest install
 
-ln -s ../lib/libc.so %dest/bin/ldd
+#ln -s ../lib/libc.so %dest/bin/ldd

@@ -6,7 +6,7 @@ import util
 import runtime
 
 pub enum Action {
-    @none
+	@none
 	emerge
 	build
 	install
@@ -27,16 +27,16 @@ pub fn (mut p Program) start(args map[string]string) bool {
 		'arch': 'x86_64'
 		'cc': 'gcc'
 		'cxx': 'g++'
-		'prefix': '/'
+		'prefix': ''
 		'root': '/'
-		'db': '%root/src/db'
-		'pkg': '%root/src/pkg'
-		'stuff': '%root/src/stuff'
-		'out': '%root/src/out'
-		'bl': '%root/src/build'
-		'dl': '%root/src/dl'
-		'scripts': '%root/src/scripts'
-		'config': '/etc/xvo.conf'
+		'db': '%root%prefixsrc/db'
+		'pkg': '%root%prefixsrc/pkg'
+		'stuff': '%root%prefixsrc/stuff'
+		'out': '%root%prefixsrc/out'
+		'bl': '%root%prefixsrc/build'
+		'dl': '%root%prefixsrc/dl'
+		'scripts': '%root%prefixsrc/scripts'
+		'config': '%root%prefixetc/xvo.conf'
 		'jobs': runtime.nr_cpus().str()
 	}
 
@@ -44,15 +44,15 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	mut lines := []string{}
 
 	if args.len > 0 {
-		for var in args.keys() {
-			if args[var] != '' {
-				result[var] = args[var].replace('%pwd', os.getwd())
+		for var, val in args {
+			if val != '' {
+				result[var] = val.replace('%pwd', os.getwd())
 			}
 		}
 	}
 
 	for var, val in result {
-		lines << var + ' ' + val.replace('%pwd', os.getwd())
+		lines << var + ' ' + val
 	}
 
 	cfg = util.read_vars(lines)
@@ -97,13 +97,13 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	os.setenv('CXXFLAGS', cfg['cxxflags'], true)
 	os.setenv('LDFLAGS', cfg['ldflags'], true)
 
-	root := cfg['root']
+	root := cfg['root'] + cfg['prefix']
 
-	os.setenv('PKG_CONFIG_LIBDIR', '$root/lib/pkgconfig', true)
-	os.setenv('PKG_CONFIG_PATH', '$root/lib/pkgconfig', true)
+	os.setenv('PKG_CONFIG_LIBDIR', '${root}lib/pkgconfig', true)
+	os.setenv('PKG_CONFIG_PATH', '${root}lib/pkgconfig', true)
 	os.setenv('PKG_CONFIG_SYSROOT_DIR', root, true)
-	os.setenv('PKG_CONFIG_SYSTEM_INCLUDE_PATH', '$root/include', true)
-	os.setenv('PKG_CONFIG_SYSTEM_LIB_PATH', '$root/lib', true)
+	os.setenv('PKG_CONFIG_SYSTEM_INCLUDE_PATH', '${root}include', true)
+	os.setenv('PKG_CONFIG_SYSTEM_LIB_PATH', '${root}lib', true)
 
 	os.mkdir_all(cfg['root']) or { }
 
@@ -184,7 +184,7 @@ pub fn (mut p Program) add_package(name string) {
 		return
 	}
 
-	mut pkg := Package{name: name, prog: p}
+	mut pkg := Package{name: name, cfg: p.cfg}
 
 	pkg.on_add()
 

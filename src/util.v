@@ -206,7 +206,7 @@ pub fn (mut v Args) parse() Args {
         if starts_with_hypen(curr) {
             opt := parse_option(curr)
             match opt.len {
-                1 { if next.len == 0 { v.options[opt[0]] = '' } }
+				1 { if next.len == 0 { v.options[opt[0]] = '' } }
                 2 { v.insert_option(opt[0], opt[1]) }
                 else {}
             }
