@@ -46,13 +46,13 @@ pub fn (mut p Program) start(args map[string]string) bool {
 	if args.len > 0 {
 		for var, val in args {
 			if val != '' {
-				result[var] = val.replace('%pwd', os.getwd())
+				result[var] = val
 			}
 		}
 	}
 
 	for var, val in result {
-		lines << var + ' ' + val
+		lines << var + ' ' + val.replace('%pwd', os.getwd())
 	}
 
 	cfg = util.read_vars(lines)
